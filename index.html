@@ -616,7 +616,9 @@
     display:flex;align-items:center;gap:5px;
   }
   .name-suggest button:active{transform:scale(.96);}
-  .match-hint{font-size:11.5px;line-height:1.75;margin:8px 2px 0;color:var(--ink-soft);}
+  .match-hint{font-size:11.5px;line-height:1.75;margin:-6px 2px 14px;color:var(--ink-soft);}
+  .field input:disabled{opacity:.5;}
+  .tbl-base input::placeholder{font-weight:500;opacity:.55;}
   .match-hint:empty{display:none;}
   .match-hint.ok{color:var(--avocado-dark);font-weight:600;}
   .field input.auto{
@@ -696,7 +698,7 @@
 <div class="sheet" id="sheet">
   <div class="sheet-handle"></div>
   <h2 id="sheetTitle">صنف جديد</h2>
-  <p class="sub">اكتب اسم الصنف ووزنه — لو الصنف موجود في جدول السعرات هحسبلك السعرات والبروتين لوحدي</p>
+  <p class="sub">اكتب اسم الصنف واختار وزنه أو كميته — لو الصنف موجود في جدول السعرات هحسبلك السعرات والبروتين لوحدي</p>
 
   <div class="field">
     <label>اسم الصنف</label>
@@ -721,14 +723,23 @@
     <div class="state-hint">عشان تفتكر السعرات دي محسوبة على إيه</div>
   </div>
 
-  <div class="field">
-    <label>الوزن <span class="icon-note">اللي أكلته</span></label>
-    <div class="input-wrap">
-      <input type="number" id="fWeight" inputmode="decimal" placeholder="مثلاً 150">
-      <span class="unit">جم</span>
+  <div class="two-col">
+    <div class="field">
+      <label>الوزن <span class="icon-note">بالجرام</span></label>
+      <div class="input-wrap">
+        <input type="number" id="fWeight" inputmode="decimal" placeholder="مثلاً 150">
+        <span class="unit">جم</span>
+      </div>
     </div>
-    <div class="match-hint" id="matchHint"></div>
+    <div class="field">
+      <label>الكمية <span class="icon-note">عدد الواحدات</span></label>
+      <div class="input-wrap">
+        <input type="number" id="fQty" inputmode="decimal" placeholder="—" disabled>
+        <span class="unit">عدد</span>
+      </div>
+    </div>
   </div>
+  <div class="match-hint" id="matchHint"></div>
 
   <div class="two-col">
     <div class="field">
@@ -787,7 +798,7 @@
 <div class="sheet sheet-tall" id="catalogSheet">
   <div class="sheet-handle"></div>
   <h2>سعرات الأصناف</h2>
-  <p class="sub">سجّل كل صنف وسعراته وبروتينه لكل 100 جم (أو أي وزن تحبه) مرة واحدة هنا، وبعدها دوس ＋ واكتب وزنك وأنا أحسبلك</p>
+  <p class="sub">سجّل كل صنف لكل 100 جم، وحط وزن الواحدة (بيضة، رغيف...) لو عايز تضيفه بالعدد</p>
 
   <div class="tbl">
     <div class="tbl-head">
@@ -809,6 +820,11 @@
         <input type="number" id="tBase" inputmode="decimal" value="100" placeholder="100">
         <span>جم</span>
       </div>
+      <div class="tbl-base">
+        <span>الكمية الواحدة كام جرام؟</span>
+        <input type="number" id="tUnit" inputmode="decimal" placeholder="مثلاً 50">
+        <span>جم <small style="opacity:.75">(اختياري)</small></span>
+      </div>
       <div class="tbl-state" id="tblState">
         <div class="segmented" id="tblStateSeg">
           <button type="button" data-state="raw">🥩 نيء</button>
@@ -818,7 +834,7 @@
     </div>
     <div id="tblBody"></div>
   </div>
-  <p class="tbl-hint">اضغط على الصف لتعديله • اسحبه ناحية الشمال لمسحه • دوس ＋ عشان تضيفه بوزنك</p>
+  <p class="tbl-hint">اضغط على الصف لتعديله • اسحبه شمال لمسحه • ＋ للإضافة</p>
   <button class="btn btn-cancel btn-block" id="catalogCloseBtn" type="button">إغلاق</button>
 </div>
 
@@ -1021,6 +1037,7 @@
   var fCal = document.getElementById('fCal');
   var fPro = document.getElementById('fPro');
   var fWeight = document.getElementById('fWeight');
+  var fQty = document.getElementById('fQty');
   var matchHint = document.getElementById('matchHint');
   var nameSuggest = document.getElementById('nameSuggest');
   var namePreview = document.getElementById('namePreview');
@@ -1052,6 +1069,7 @@
   var tCal = document.getElementById('tCal');
   var tPro = document.getElementById('tPro');
   var tBase = document.getElementById('tBase');
+  var tUnit = document.getElementById('tUnit');
   var tblSave = document.getElementById('tblSave');
   var tblState = document.getElementById('tblState');
   var tblStateButtons = document.getElementById('tblStateSeg').querySelectorAll('button');
@@ -1122,6 +1140,7 @@
   }
 
   function fmtNum(n){ return String(Math.round((Number(n) || 0) * 10) / 10); }
+  function fmt2(n){ return String(Math.round((Number(n) || 0) * 100) / 100); }
 
   function findIndexById(arr, id){
     for (var i = 0; i < arr.length; i++){ if (String(arr[i].id) === String(id)) return i; }
@@ -1131,7 +1150,7 @@
   function buildBadges(it){
     var s = '<span class="badge cal">🔥 '+Math.round(it.calories)+'</span>'+
             '<span class="badge pro">💪 '+Math.round(it.protein)+'g</span>';
-    if (it.grams) s += '<span class="badge state">⚖️ '+fmtNum(it.grams)+' جم</span>';
+    if (it.grams) s += '<span class="badge state">⚖️ '+fmtNum(it.grams)+' جم'+(it.qty ? ' • ×'+fmt2(it.qty) : '')+'</span>';
     if (it.state === 'raw') s += '<span class="badge state">🥩 نيء</span>';
     if (it.state === 'cooked') s += '<span class="badge state">🍳 مستوي</span>';
     return s;
@@ -1312,6 +1331,7 @@
       id: idx !== -1 ? catalog[idx].id : 'c_' + Date.now() + '_' + Math.floor(Math.random()*1000),
       name: entry.name, calories: entry.calories, protein: entry.protein,
       base: entry.base > 0 ? entry.base : 100,
+      unit: entry.unit > 0 ? entry.unit : null,
       state: entry.state || null, icon: entry.icon, iconManual: !!entry.iconManual
     };
     if (idx !== -1) catalog[idx] = rec; else catalog.push(rec);
@@ -1352,7 +1372,7 @@
     var html = '';
     catalog.slice().reverse().forEach(function(it){
       var stateTxt = it.state === 'raw' ? 'نيء' : (it.state === 'cooked' ? 'مستوي' : '');
-      var perTxt = 'لكل ' + fmtNum(it.base > 0 ? it.base : 100) + ' جم';
+      var perTxt = 'لكل ' + fmtNum(it.base > 0 ? it.base : 100) + ' جم' + (it.unit > 0 ? ' • الواحدة ' + fmtNum(it.unit) + ' جم' : '');
       html +=
         '<div class="row-outer" data-id="'+it.id+'">'+
           SWIPE_BG+
@@ -1410,7 +1430,7 @@
   tName.addEventListener('input', refreshTblState);
 
   function clearTblForm(){
-    tName.value = ''; tCal.value = ''; tPro.value = ''; tBase.value = '100';
+    tName.value = ''; tCal.value = ''; tPro.value = ''; tBase.value = '100'; tUnit.value = '';
     tblState.classList.remove('show');
     setTblState(null);
   }
@@ -1422,6 +1442,7 @@
     editingId = it.id;
     tName.value = it.name; tCal.value = it.calories; tPro.value = it.protein;
     tBase.value = it.base > 0 ? it.base : 100;
+    tUnit.value = it.unit > 0 ? it.unit : '';
     refreshTblState();
     if (it.state){ tblState.classList.add('show'); setTblState(it.state); }
     tblForm.classList.add('editing');
@@ -1447,6 +1468,8 @@
     if (isNaN(pro) || pro < 0){ pro = 0; }
     var base = parseFloat(tBase.value);
     if (isNaN(base) || base <= 0){ base = 100; }
+    var unit = parseFloat(tUnit.value);
+    if (isNaN(unit) || unit <= 0){ unit = null; }
 
     var wasEditing = !!editingId;
     if (wasEditing){
@@ -1454,12 +1477,12 @@
       if (idx !== -1){
         var it = catalog[idx];
         var sameName = normalizeName(it.name) === name;
-        it.name = name; it.calories = cal; it.protein = pro; it.base = base; it.state = tblSelState;
+        it.name = name; it.calories = cal; it.protein = pro; it.base = base; it.unit = unit; it.state = tblSelState;
         if (!(it.iconManual && sameName)){ it.icon = detectEmoji(name); it.iconManual = false; }
         persistCatalog();
       }
     } else {
-      upsertCatalog({ name: name, calories: cal, protein: pro, base: base, state: tblSelState, icon: detectEmoji(name), iconManual: false });
+      upsertCatalog({ name: name, calories: cal, protein: pro, base: base, unit: unit, state: tblSelState, icon: detectEmoji(name), iconManual: false });
     }
     endEdit();
     renderCatalog();
@@ -1470,7 +1493,8 @@
   tName.addEventListener('keydown', function(e){ if (e.key === 'Enter'){ e.preventDefault(); tCal.focus(); } });
   tCal.addEventListener('keydown', function(e){ if (e.key === 'Enter'){ e.preventDefault(); tPro.focus(); } });
   tPro.addEventListener('keydown', function(e){ if (e.key === 'Enter'){ e.preventDefault(); saveTableEntry(); } });
-  tBase.addEventListener('keydown', function(e){ if (e.key === 'Enter'){ e.preventDefault(); saveTableEntry(); } });
+  tBase.addEventListener('keydown', function(e){ if (e.key === 'Enter'){ e.preventDefault(); tUnit.focus(); } });
+  tUnit.addEventListener('keydown', function(e){ if (e.key === 'Enter'){ e.preventDefault(); saveTableEntry(); } });
 
   function openCatalogSheet(){
     endEdit();
@@ -1482,20 +1506,21 @@
   function closeCatalogSheet(){
     catalogOverlay.classList.remove('show');
     catalogSheet.classList.remove('show');
-    tName.blur(); tCal.blur(); tPro.blur(); tBase.blur();
+    tName.blur(); tCal.blur(); tPro.blur(); tBase.blur(); tUnit.blur();
   }
   openCatalogBtn.addEventListener('click', openCatalogSheet);
   catalogOverlay.addEventListener('click', closeCatalogSheet);
   catalogCloseBtn.addEventListener('click', closeCatalogSheet);
 
   /* ---- add item to today ---- */
-  function addItem(name, cal, pro, state, icon, iconManual, grams){
+  function addItem(name, cal, pro, state, icon, iconManual, grams, qty){
     var it = {
       id: Date.now() + '_' + Math.floor(Math.random()*1000),
       name: name,
       calories: cal,
       protein: pro,
       grams: grams > 0 ? grams : null,
+      qty: qty > 0 ? qty : null,
       state: state || null,
       icon: icon || detectEmoji(name),
       iconManual: !!iconManual
@@ -1556,11 +1581,25 @@
     fWeight.focus();
   });
 
+  var lastEdited = 'g';        // آخر خانة اتكتبت: 'g' جرامات | 'q' كمية
+
   function refreshMatch(){
     var m = findCatalogByName(fName.value);
-    var g = parseFloat(fWeight.value);
+    var unit = (m && m.unit > 0) ? Number(m.unit) : null;
+    var g, hintTxt = '', ok = false;
+
+    // الكمية متاحة بس لو الصنف في الجدول وليه وزن للواحدة
+    fQty.disabled = !unit;
+    fQty.placeholder = unit ? 'مثلاً 2' : '—';
+    if (unit && lastEdited === 'q'){
+      var q = parseFloat(fQty.value);
+      if (!isNaN(q) && q > 0){ g = q * unit; fWeight.value = fmtNum(g); }
+      else { g = NaN; fWeight.value = ''; }
+    } else {
+      g = parseFloat(fWeight.value);
+      fQty.value = (unit && g > 0) ? fmt2(g / unit) : '';
+    }
     var hasG = !isNaN(g) && g > 0;
-    var hintTxt = '', ok = false;
 
     if (m){
       var base = baseOf(m);
@@ -1569,16 +1608,18 @@
         if (m.state && stateField.classList.contains('show') && !selectedState) setSelectedState(m.state);
       }
       var perTxt = fmtNum(m.calories) + ' سعرة • ' + fmtNum(m.protein) + 'g بروتين لكل ' + fmtNum(base) + ' جم';
+      var unitTxt = unit ? ' • الواحدة ' + fmtNum(unit) + ' جم' : '';
       ok = true;
       if (hasG){
         fCal.value = fmtNum(m.calories * g / base);
         fPro.value = fmtNum(m.protein * g / base);
         markAuto(true);
-        hintTxt = '✓ الصنف في الجدول (' + perTxt + ') — اتحسب على ' + fmtNum(g) + ' جم';
+        hintTxt = '✓ الصنف في الجدول (' + perTxt + unitTxt + ') — اتحسب على ' + fmtNum(g) + ' جم';
       } else {
         if (autoFilled){ fCal.value = ''; fPro.value = ''; }
         markAuto(false);
-        hintTxt = '✓ الصنف في الجدول (' + perTxt + ') — اكتب الوزن وأنا أحسبلك';
+        hintTxt = '✓ الصنف في الجدول (' + perTxt + unitTxt + ') — اكتب ' + (unit ? 'الوزن أو الكمية' : 'الوزن') + ' وأنا أحسبلك';
+        if (!unit) hintTxt += ' • ولو عايز بالكمية حط وزن الواحدة في الجدول';
       }
     } else {
       lastMatchId = null;
@@ -1591,7 +1632,8 @@
     matchHint.classList.toggle('ok', ok);
     renderSuggest(m);
   }
-  fWeight.addEventListener('input', refreshMatch);
+  fWeight.addEventListener('input', function(){ lastEdited = 'g'; refreshMatch(); });
+  fQty.addEventListener('input', function(){ lastEdited = 'q'; refreshMatch(); });
 
   /* ---- Icon picker (auto from the name, or pick yourself) ---- */
   iconGrid.innerHTML = ICON_CHOICES.map(function(ic){
@@ -1662,7 +1704,8 @@
   function openSheet(pre){
     var hasPre = !!(pre && pre.name);
     fName.value = hasPre ? pre.name : '';
-    fCal.value=''; fPro.value=''; fWeight.value='';
+    fCal.value=''; fPro.value=''; fWeight.value=''; fQty.value='';
+    lastEdited = 'g';
     markAuto(false);
     lastMatchId = null;
     stateField.classList.remove('show');
@@ -1674,12 +1717,12 @@
     overlay.classList.add('show');
     sheet.classList.add('show');
     sheet.scrollTop = 0;
-    setTimeout(function(){ (hasPre ? fWeight : fName).focus(); }, 260);
+    setTimeout(function(){ (hasPre ? (pre.unit > 0 ? fQty : fWeight) : fName).focus(); }, 260);
   }
   function closeSheet(){
     overlay.classList.remove('show');
     sheet.classList.remove('show');
-    fName.blur(); fCal.blur(); fPro.blur(); fWeight.blur();
+    fName.blur(); fCal.blur(); fPro.blur(); fWeight.blur(); fQty.blur();
   }
 
   openSheetBtn.addEventListener('click', function(){ openSheet(); });
@@ -1694,12 +1737,14 @@
     if (isNaN(grams) || grams <= 0) grams = null;
     var match = findCatalogByName(name);
     if (!name){ showToast('اكتب اسم الصنف'); fName.focus(); return; }
-    if (match && !grams){ showToast('اكتب الوزن عشان أحسبلك'); fWeight.focus(); return; }
+    if (match && !grams){ showToast('اكتب الوزن أو الكمية عشان أحسبلك'); (match.unit > 0 ? fQty : fWeight).focus(); return; }
     if (isNaN(cal) || cal < 0){ showToast('اكتب السعرات صح'); fCal.focus(); return; }
     if (isNaN(pro) || pro < 0){ pro = 0; }
     var icon = iconManuallyChosen ? selectedIcon : (match && match.iconManual && match.icon ? match.icon : detectEmoji(name));   // re-detect on save, never rely on the typing event
     var manual = iconManuallyChosen || !!(match && match.iconManual);
-    addItem(name, cal, pro, selectedState, icon, manual, grams);
+    var qty = parseFloat(fQty.value);
+    if (!(match && match.unit > 0 && lastEdited === 'q' && qty > 0)) qty = null;
+    addItem(name, cal, pro, selectedState, icon, manual, grams, qty);
     // صنف جديد بوزن => يتسجل في الجدول لكل 100 جم تلقائي
     if (!match && grams){
       upsertCatalog({
