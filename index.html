@@ -541,6 +541,28 @@
     font-size:11.5px;color:var(--ink-soft);
     text-align:center;margin:12px 0 0;line-height:1.7;
   }
+  .tbl-base{
+    grid-column:1 / -1;
+    display:flex;align-items:center;gap:8px;
+    font-size:12px;font-weight:600;color:var(--ink-soft);
+  }
+  .tbl-form .tbl-base input{width:76px;flex:none;}
+  .name-suggest{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+  .name-suggest:empty{display:none;}
+  .name-suggest button{
+    border:1.5px solid var(--line);background:var(--paper);
+    border-radius:20px;padding:5px 11px;
+    font-family:'Cairo',sans-serif;font-size:12.5px;font-weight:600;color:var(--ink);
+    display:flex;align-items:center;gap:5px;
+  }
+  .name-suggest button:active{transform:scale(.96);}
+  .match-hint{font-size:11.5px;line-height:1.75;margin:8px 2px 0;color:var(--ink-soft);}
+  .match-hint:empty{display:none;}
+  .match-hint.ok{color:var(--avocado-dark);font-weight:600;}
+  .field input.auto{
+    background:#EAF1E1;border-color:#C9DBB5;
+    color:var(--avocado-dark);font-weight:700;
+  }
   @media (max-width:360px){
     .tbl-head,.tbl-form,.row.tbl-row{grid-template-columns:minmax(0,1fr) 48px 48px 34px;gap:5px;padding-left:8px;padding-right:8px;}
     .tbl-save,.tbl-add{width:34px;height:34px;}
@@ -606,7 +628,7 @@
 <div class="sheet" id="sheet">
   <div class="sheet-handle"></div>
   <h2 id="sheetTitle">صنف جديد</h2>
-  <p class="sub">اكتب الاسم والسعرات والبروتين — والأيقونة بتتحدد لوحدها وتقدر تغيّرها</p>
+  <p class="sub">اكتب اسم الصنف ووزنه — لو الصنف موجود في جدول السعرات هحسبلك السعرات والبروتين لوحدي</p>
 
   <div class="field">
     <label>اسم الصنف</label>
@@ -614,6 +636,7 @@
       <span class="name-preview" id="namePreview">🍽️</span>
       <input type="text" id="fName" class="has-preview" placeholder="مثلاً: صدر فراخ مشوي" maxlength="40" autocomplete="off">
     </div>
+    <div class="name-suggest" id="nameSuggest"></div>
   </div>
 
   <div class="field">
@@ -628,6 +651,15 @@
       <button type="button" data-state="cooked">🍳 مستوي</button>
     </div>
     <div class="state-hint">عشان تفتكر السعرات دي محسوبة على إيه</div>
+  </div>
+
+  <div class="field">
+    <label>الوزن <span class="icon-note">اللي أكلته</span></label>
+    <div class="input-wrap">
+      <input type="number" id="fWeight" inputmode="decimal" placeholder="مثلاً 150">
+      <span class="unit">جم</span>
+    </div>
+    <div class="match-hint" id="matchHint"></div>
   </div>
 
   <div class="two-col">
@@ -687,7 +719,7 @@
 <div class="sheet sheet-tall" id="catalogSheet">
   <div class="sheet-handle"></div>
   <h2>سعرات الأصناف</h2>
-  <p class="sub">سجّل أصنافك وسعراتها مرة واحدة هنا، وبعدها دوس ＋ عشان تضيفها لحساب النهاردة</p>
+  <p class="sub">سجّل كل صنف وسعراته وبروتينه لكل 100 جم (أو أي وزن تحبه) مرة واحدة هنا، وبعدها دوس ＋ واكتب وزنك وأنا أحسبلك</p>
 
   <div class="tbl">
     <div class="tbl-head">
@@ -704,6 +736,11 @@
       <button type="button" class="tbl-save" id="tblSave" aria-label="حفظ في الجدول">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
       </button>
+      <div class="tbl-base">
+        <span>السعرات والبروتين دول لكل</span>
+        <input type="number" id="tBase" inputmode="decimal" value="100" placeholder="100">
+        <span>جم</span>
+      </div>
       <div class="tbl-state" id="tblState">
         <div class="segmented" id="tblStateSeg">
           <button type="button" data-state="raw">🥩 نيء</button>
@@ -713,7 +750,7 @@
     </div>
     <div id="tblBody"></div>
   </div>
-  <p class="tbl-hint">اضغط على الصف لتعديله • اسحبه ناحية الشمال لمسحه</p>
+  <p class="tbl-hint">اضغط على الصف لتعديله • اسحبه ناحية الشمال لمسحه • دوس ＋ عشان تضيفه بوزنك</p>
   <button class="btn btn-cancel btn-block" id="catalogCloseBtn" type="button">إغلاق</button>
 </div>
 
@@ -911,6 +948,9 @@
   var fName = document.getElementById('fName');
   var fCal = document.getElementById('fCal');
   var fPro = document.getElementById('fPro');
+  var fWeight = document.getElementById('fWeight');
+  var matchHint = document.getElementById('matchHint');
+  var nameSuggest = document.getElementById('nameSuggest');
   var namePreview = document.getElementById('namePreview');
   var iconNote = document.getElementById('iconNote');
   var toastEl = document.getElementById('toast');
@@ -939,6 +979,7 @@
   var tName = document.getElementById('tName');
   var tCal = document.getElementById('tCal');
   var tPro = document.getElementById('tPro');
+  var tBase = document.getElementById('tBase');
   var tblSave = document.getElementById('tblSave');
   var tblState = document.getElementById('tblState');
   var tblStateButtons = document.getElementById('tblStateSeg').querySelectorAll('button');
@@ -949,7 +990,6 @@
   var TRASH_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg>';
   var SWIPE_BG = '<div class="swipe-bg" aria-hidden="true">' + TRASH_SVG + '<span>حذف</span></div>';
   var PLUS_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>';
-  var CHECK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
 
   /* ---- storage ---- */
   function load(){
@@ -1019,6 +1059,7 @@
   function buildBadges(it){
     var s = '<span class="badge cal">🔥 '+Math.round(it.calories)+'</span>'+
             '<span class="badge pro">💪 '+Math.round(it.protein)+'g</span>';
+    if (it.grams) s += '<span class="badge state">⚖️ '+fmtNum(it.grams)+' جم</span>';
     if (it.state === 'raw') s += '<span class="badge state">🥩 نيء</span>';
     if (it.state === 'cooked') s += '<span class="badge state">🍳 مستوي</span>';
     return s;
@@ -1175,6 +1216,7 @@
     var rec = {
       id: idx !== -1 ? catalog[idx].id : 'c_' + Date.now() + '_' + Math.floor(Math.random()*1000),
       name: entry.name, calories: entry.calories, protein: entry.protein,
+      base: entry.base > 0 ? entry.base : 100,
       state: entry.state || null, icon: entry.icon, iconManual: !!entry.iconManual
     };
     if (idx !== -1) catalog[idx] = rec; else catalog.push(rec);
@@ -1195,17 +1237,12 @@
     });
   }
 
-  function quickAddFromCatalog(id, btn){
+  // + في الجدول: يفتح شاشة الإضافة والاسم متعبّي، وأنت تكتب الوزن بس
+  function quickAddFromCatalog(id){
     var idx = findIndexById(catalog, id);
     if (idx < 0) return;
-    var it = catalog[idx];
-    addItem(it.name, it.calories, it.protein, it.state, it.icon, it.iconManual);
-    showToast('اتضاف للنهاردة ✓');
-    if (btn){
-      btn.classList.add('done');
-      btn.innerHTML = CHECK_SVG;
-      setTimeout(function(){ btn.classList.remove('done'); btn.innerHTML = PLUS_SVG; }, 800);
-    }
+    closeCatalogSheet();
+    openSheet(catalog[idx]);
   }
 
   function renderCatalog(){
@@ -1213,13 +1250,14 @@
       tblBody.innerHTML =
         '<div class="empty">'+
           '<span class="emoji">📋</span>'+
-          '<p>الجدول لسه فاضي<br><strong>اكتب أول صنف فوق</strong> أو أضف صنف من الشاشة الرئيسية وهيتسجل هنا تلقائي</p>'+
+          '<p>الجدول لسه فاضي<br><strong>اكتب أول صنف فوق</strong> بسعراته وبروتينه لكل 100 جم</p>'+
         '</div>';
       return;
     }
     var html = '';
     catalog.slice().reverse().forEach(function(it){
       var stateTxt = it.state === 'raw' ? 'نيء' : (it.state === 'cooked' ? 'مستوي' : '');
+      var perTxt = 'لكل ' + fmtNum(it.base > 0 ? it.base : 100) + ' جم';
       html +=
         '<div class="row-outer" data-id="'+it.id+'">'+
           SWIPE_BG+
@@ -1228,7 +1266,7 @@
               '<span class="tc-emoji">'+itemIcon(it)+'</span>'+
               '<span class="tc-txt">'+
                 '<span class="tc-title">'+escapeHtml(it.name)+'</span>'+
-                (stateTxt ? '<span class="tc-state">'+stateTxt+'</span>' : '')+
+                '<span class="tc-state">'+(stateTxt ? stateTxt + ' • ' : '')+perTxt+'</span>'+
               '</span>'+
             '</div>'+
             '<span class="pill cal">'+fmtNum(it.calories)+'</span>'+
@@ -1242,7 +1280,7 @@
     tblBody.querySelectorAll('.tbl-add').forEach(function(btn){
       btn.addEventListener('click', function(e){
         e.stopPropagation();
-        quickAddFromCatalog(btn.getAttribute('data-id'), btn);
+        quickAddFromCatalog(btn.getAttribute('data-id'));
       });
     });
   }
@@ -1277,7 +1315,7 @@
   tName.addEventListener('input', refreshTblState);
 
   function clearTblForm(){
-    tName.value = ''; tCal.value = ''; tPro.value = '';
+    tName.value = ''; tCal.value = ''; tPro.value = ''; tBase.value = '100';
     tblState.classList.remove('show');
     setTblState(null);
   }
@@ -1288,6 +1326,7 @@
     var it = catalog[idx];
     editingId = it.id;
     tName.value = it.name; tCal.value = it.calories; tPro.value = it.protein;
+    tBase.value = it.base > 0 ? it.base : 100;
     refreshTblState();
     if (it.state){ tblState.classList.add('show'); setTblState(it.state); }
     tblForm.classList.add('editing');
@@ -1311,6 +1350,8 @@
     if (!name){ showToast('اكتب اسم الصنف'); tName.focus(); return; }
     if (isNaN(cal) || cal < 0){ showToast('اكتب السعرات صح'); tCal.focus(); return; }
     if (isNaN(pro) || pro < 0){ pro = 0; }
+    var base = parseFloat(tBase.value);
+    if (isNaN(base) || base <= 0){ base = 100; }
 
     var wasEditing = !!editingId;
     if (wasEditing){
@@ -1318,12 +1359,12 @@
       if (idx !== -1){
         var it = catalog[idx];
         var sameName = normalizeName(it.name) === name;
-        it.name = name; it.calories = cal; it.protein = pro; it.state = tblSelState;
+        it.name = name; it.calories = cal; it.protein = pro; it.base = base; it.state = tblSelState;
         if (!(it.iconManual && sameName)){ it.icon = detectEmoji(name); it.iconManual = false; }
         persistCatalog();
       }
     } else {
-      upsertCatalog({ name: name, calories: cal, protein: pro, state: tblSelState, icon: detectEmoji(name), iconManual: false });
+      upsertCatalog({ name: name, calories: cal, protein: pro, base: base, state: tblSelState, icon: detectEmoji(name), iconManual: false });
     }
     endEdit();
     renderCatalog();
@@ -1334,6 +1375,7 @@
   tName.addEventListener('keydown', function(e){ if (e.key === 'Enter'){ e.preventDefault(); tCal.focus(); } });
   tCal.addEventListener('keydown', function(e){ if (e.key === 'Enter'){ e.preventDefault(); tPro.focus(); } });
   tPro.addEventListener('keydown', function(e){ if (e.key === 'Enter'){ e.preventDefault(); saveTableEntry(); } });
+  tBase.addEventListener('keydown', function(e){ if (e.key === 'Enter'){ e.preventDefault(); saveTableEntry(); } });
 
   function openCatalogSheet(){
     endEdit();
@@ -1345,29 +1387,116 @@
   function closeCatalogSheet(){
     catalogOverlay.classList.remove('show');
     catalogSheet.classList.remove('show');
-    tName.blur(); tCal.blur(); tPro.blur();
+    tName.blur(); tCal.blur(); tPro.blur(); tBase.blur();
   }
   openCatalogBtn.addEventListener('click', openCatalogSheet);
   catalogOverlay.addEventListener('click', closeCatalogSheet);
   catalogCloseBtn.addEventListener('click', closeCatalogSheet);
 
   /* ---- add item to today ---- */
-  function addItem(name, cal, pro, state, icon, iconManual){
+  function addItem(name, cal, pro, state, icon, iconManual, grams){
     var it = {
       id: Date.now() + '_' + Math.floor(Math.random()*1000),
       name: name,
       calories: cal,
       protein: pro,
+      grams: grams > 0 ? grams : null,
       state: state || null,
       icon: icon || detectEmoji(name),
       iconManual: !!iconManual
     };
     items.push(it);
     persist();
-    upsertCatalog(it);
     render();
-    if (catalogSheet.classList.contains('show')) renderCatalog();
+    return it;
   }
+
+  /* =========================================================
+     Auto-calc: الاسم لو موجود في الجدول + الوزن => السعرات والبروتين
+     ========================================================= */
+  var autoFilled = false;      // fCal/fPro متعبّيين تلقائي
+  var lastMatchId = null;
+
+  function round1(n){ return Math.round(n * 10) / 10; }
+
+  function findCatalogByName(name){
+    var q = norm(name);
+    if (!q) return null;
+    for (var i = catalog.length - 1; i >= 0; i--){
+      if (norm(catalog[i].name) === q) return catalog[i];
+    }
+    return null;
+  }
+  function baseOf(c){ return c && c.base > 0 ? Number(c.base) : 100; }
+
+  function markAuto(on){
+    autoFilled = on;
+    fCal.classList.toggle('auto', on);
+    fPro.classList.toggle('auto', on);
+  }
+  fCal.addEventListener('input', function(){ markAuto(false); });
+  fPro.addEventListener('input', function(){ markAuto(false); });
+
+  function renderSuggest(exact){
+    var q = norm(fName.value);
+    var html = '';
+    if (q && !exact){
+      var n = 0;
+      for (var i = catalog.length - 1; i >= 0 && n < 4; i--){
+        if (norm(catalog[i].name).indexOf(q) !== -1){
+          html += '<button type="button" data-id="'+catalog[i].id+'">'+itemIcon(catalog[i])+' '+escapeHtml(catalog[i].name)+'</button>';
+          n++;
+        }
+      }
+    }
+    nameSuggest.innerHTML = html;
+  }
+  nameSuggest.addEventListener('click', function(e){
+    var b = e.target.closest('button');
+    if (!b) return;
+    var idx = findIndexById(catalog, b.getAttribute('data-id'));
+    if (idx < 0) return;
+    fName.value = catalog[idx].name;
+    onNameChange();
+    fWeight.focus();
+  });
+
+  function refreshMatch(){
+    var m = findCatalogByName(fName.value);
+    var g = parseFloat(fWeight.value);
+    var hasG = !isNaN(g) && g > 0;
+    var hintTxt = '', ok = false;
+
+    if (m){
+      var base = baseOf(m);
+      if (lastMatchId !== m.id){
+        lastMatchId = m.id;
+        if (m.state && stateField.classList.contains('show') && !selectedState) setSelectedState(m.state);
+      }
+      var perTxt = fmtNum(m.calories) + ' سعرة • ' + fmtNum(m.protein) + 'g بروتين لكل ' + fmtNum(base) + ' جم';
+      ok = true;
+      if (hasG){
+        fCal.value = fmtNum(m.calories * g / base);
+        fPro.value = fmtNum(m.protein * g / base);
+        markAuto(true);
+        hintTxt = '✓ الصنف في الجدول (' + perTxt + ') — اتحسب على ' + fmtNum(g) + ' جم';
+      } else {
+        if (autoFilled){ fCal.value = ''; fPro.value = ''; }
+        markAuto(false);
+        hintTxt = '✓ الصنف في الجدول (' + perTxt + ') — اكتب الوزن وأنا أحسبلك';
+      }
+    } else {
+      lastMatchId = null;
+      if (autoFilled){ fCal.value = ''; fPro.value = ''; markAuto(false); }
+      if (fName.value.trim() && hasG){
+        hintTxt = 'الصنف مش في الجدول — اكتب السعرات والبروتين للوزن ده وهيتسجل في الجدول تلقائي';
+      }
+    }
+    matchHint.textContent = hintTxt;
+    matchHint.classList.toggle('ok', ok);
+    renderSuggest(m);
+  }
+  fWeight.addEventListener('input', refreshMatch);
 
   /* ---- Icon picker (auto from the name, or pick yourself) ---- */
   iconGrid.innerHTML = ICON_CHOICES.map(function(ic){
@@ -1426,32 +1555,39 @@
     });
   });
 
-  fName.addEventListener('input', function(){
+  function onNameChange(){
     refreshStateVisibility();
     if (!iconManuallyChosen){ selectedIcon = detectEmoji(fName.value); }
     updateIconUI();
-  });
+    refreshMatch();
+  }
+  fName.addEventListener('input', onNameChange);
 
   /* ---- Add-item sheet ---- */
-  function openSheet(){
-    fName.value = ''; fCal.value=''; fPro.value='';
+  function openSheet(pre){
+    var hasPre = !!(pre && pre.name);
+    fName.value = hasPre ? pre.name : '';
+    fCal.value=''; fPro.value=''; fWeight.value='';
+    markAuto(false);
+    lastMatchId = null;
     stateField.classList.remove('show');
     setSelectedState(null);
     iconManuallyChosen = false;
     selectedIcon = '🍽️';
-    updateIconUI();
+    if (hasPre && pre.iconManual && pre.icon){ iconManuallyChosen = true; selectedIcon = pre.icon; }
+    onNameChange();
     overlay.classList.add('show');
     sheet.classList.add('show');
     sheet.scrollTop = 0;
-    setTimeout(function(){ fName.focus(); }, 260);
+    setTimeout(function(){ (hasPre ? fWeight : fName).focus(); }, 260);
   }
   function closeSheet(){
     overlay.classList.remove('show');
     sheet.classList.remove('show');
-    fName.blur(); fCal.blur(); fPro.blur();
+    fName.blur(); fCal.blur(); fPro.blur(); fWeight.blur();
   }
 
-  openSheetBtn.addEventListener('click', openSheet);
+  openSheetBtn.addEventListener('click', function(){ openSheet(); });
   cancelBtn.addEventListener('click', closeSheet);
   overlay.addEventListener('click', closeSheet);
 
@@ -1459,11 +1595,23 @@
     var name = fName.value.trim();
     var cal = parseFloat(fCal.value);
     var pro = parseFloat(fPro.value);
+    var grams = parseFloat(fWeight.value);
+    if (isNaN(grams) || grams <= 0) grams = null;
+    var match = findCatalogByName(name);
     if (!name){ showToast('اكتب اسم الصنف'); fName.focus(); return; }
+    if (match && !grams){ showToast('اكتب الوزن عشان أحسبلك'); fWeight.focus(); return; }
     if (isNaN(cal) || cal < 0){ showToast('اكتب السعرات صح'); fCal.focus(); return; }
     if (isNaN(pro) || pro < 0){ pro = 0; }
-    var icon = iconManuallyChosen ? selectedIcon : detectEmoji(name);   // re-detect on save, never rely on the typing event
-    addItem(name, cal, pro, selectedState, icon, iconManuallyChosen);
+    var icon = iconManuallyChosen ? selectedIcon : (match && match.iconManual && match.icon ? match.icon : detectEmoji(name));   // re-detect on save, never rely on the typing event
+    var manual = iconManuallyChosen || !!(match && match.iconManual);
+    addItem(name, cal, pro, selectedState, icon, manual, grams);
+    // صنف جديد بوزن => يتسجل في الجدول لكل 100 جم تلقائي
+    if (!match && grams){
+      upsertCatalog({
+        name: name, calories: round1(cal * 100 / grams), protein: round1(pro * 100 / grams),
+        base: 100, state: selectedState, icon: icon, iconManual: manual
+      });
+    }
     closeSheet();
     showToast('تمت الإضافة ✓');
   });
