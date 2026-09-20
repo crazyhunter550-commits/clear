@@ -93,7 +93,44 @@
     background-size:16px 14px;
   }
   .ticket-row{
-    display:flex;justify-content:space-between;gap:14px;
+    position:relative;
+    display:flex;justify-content:space-between;align-items:center;gap:0;
+  }
+  /* درج السعرات: مستخبي على اليمين وبيطلع بالسهم */
+  .cal-panel{
+    position:relative;display:flex;
+    flex:0 0 0%;min-width:0;max-height:0;overflow:hidden;
+    transition:flex-basis .42s cubic-bezier(.32,.72,0,1), max-height .42s cubic-bezier(.32,.72,0,1);
+  }
+  .cal-panel::after{
+    content:"";position:absolute;left:0;top:6px;bottom:6px;width:1px;
+    background:rgba(255,255,255,.28);
+  }
+  .ticket-row.cal-open .cal-panel{flex-basis:58%;max-height:150px;}
+  .cal-panel-in{
+    flex:none;width:100%;min-width:128px;
+    padding-inline-start:12px;padding-inline-end:6px;
+    display:flex;justify-content:center;
+    opacity:0;transform:translateX(38px);
+    transition:transform .42s cubic-bezier(.32,.72,0,1), opacity .3s ease;
+  }
+  .ticket-row.cal-open .cal-panel-in{opacity:1;transform:none;transition-delay:.05s;}
+  .cal-tab{
+    position:absolute;right:-20px;top:50%;transform:translateY(-50%);
+    width:24px;height:54px;padding:0;z-index:2;
+    border:1px solid rgba(255,255,255,.42);border-right:none;
+    border-radius:14px 0 0 14px;
+    background:rgba(255,255,255,.18);color:#FFF6EC;
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+    transition:background .15s ease;
+  }
+  .cal-tab:active{background:rgba(255,255,255,.32);}
+  .cal-tab svg{width:16px;height:16px;transition:transform .42s cubic-bezier(.32,.72,0,1);}
+  .ticket-row.cal-open .cal-tab svg{transform:rotate(180deg);}
+  @media (max-width:370px){
+    .ticket-row.cal-open .cal-panel{flex-basis:62%;}
+    .cal-stat.cal-hidden .cal-toggle{padding:7px 12px;font-size:12.5px;}
   }
   .ticket-stat{flex:1;text-align:center;}
   .ticket-stat .num{
@@ -108,6 +145,29 @@
   .ticket-stat .lbl{
     font-size:12px;margin-top:6px;opacity:.9;
   }
+  .cal-stat{display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  .cal-stat.cal-hidden .num,.cal-stat.cal-hidden .lbl{display:none;}
+  .cal-toggle{
+    font-family:'Cairo',sans-serif;font-weight:700;
+    color:#FFF6EC;cursor:pointer;
+  }
+  .cal-stat.cal-hidden .cal-toggle{
+    background:rgba(255,255,255,.16);
+    border:1px solid rgba(255,255,255,.45);
+    border-radius:22px;padding:8px 16px;font-size:13.5px;
+  }
+  .cal-stat:not(.cal-hidden) .cal-toggle{
+    background:none;border:none;padding:4px 8px;margin-top:4px;
+    font-size:11.5px;font-weight:600;opacity:.8;text-decoration:underline;
+  }
+  .cal-toggle:active{transform:scale(.96);}
+  .cal-warn{
+    margin-top:7px;
+    background:#FFF3E8;color:#C81E1E;
+    font-size:11.5px;font-weight:800;
+    padding:2px 10px;border-radius:12px;
+  }
+  .cal-stat:not(.cal-hidden) .cal-warn{display:none;}
   .ticket-div{width:1px;background:rgba(255,255,255,.28);margin:2px 0;}
   .ticket-goal-row{
     margin-top:14px;padding-top:12px;
@@ -586,16 +646,24 @@
   </div>
 
   <div class="ticket">
-    <div class="ticket-row">
-      <div class="ticket-stat">
-        <div class="num" id="totalCal">0</div>
-        <div class="lbl">سعرة حرارية 🔥</div>
+    <div class="ticket-row" id="ticketRow">
+      <div class="cal-panel" id="calPanel">
+        <div class="cal-panel-in">
+          <div class="ticket-stat cal-stat cal-hidden" id="calStat">
+            <div class="num" id="totalCal">0</div>
+            <div class="lbl">سعرة حرارية 🔥</div>
+            <button type="button" class="cal-toggle" id="calToggle">إظهار السعرات</button>
+            <div class="cal-warn">للضرورة فقط</div>
+          </div>
+        </div>
       </div>
-      <div class="ticket-div"></div>
       <div class="ticket-stat">
         <div class="num" id="totalPro">0<small>g</small></div>
         <div class="lbl">بروتين 💪</div>
       </div>
+      <button type="button" class="cal-tab" id="calTab" aria-label="السعرات" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 6l-6 6 6 6"/></svg>
+      </button>
     </div>
     <div class="ticket-goal-row">
       <span id="goalTxt">حدّد هدفك اليومي من البروتين</span>
@@ -939,6 +1007,10 @@
   var swipeHint = document.getElementById('swipeHint');
   var goalTxt = document.getElementById('goalTxt');
   var goalBtn = document.getElementById('goalBtn');
+  var calStat = document.getElementById('calStat');
+  var calToggle = document.getElementById('calToggle');
+  var ticketRow = document.getElementById('ticketRow');
+  var calTab = document.getElementById('calTab');
 
   var sheet = document.getElementById('sheet');
   var overlay = document.getElementById('overlay');
@@ -1064,6 +1136,29 @@
     if (it.state === 'cooked') s += '<span class="badge state">🍳 مستوي</span>';
     return s;
   }
+
+  // السعرات مخفية دايمًا أول ما التطبيق يفتح — تظهر بالزرار وترجع تتخفي
+  function setCalVisible(on){
+    calStat.classList.toggle('cal-hidden', !on);
+    calToggle.textContent = on ? 'إخفاء' : 'إظهار السعرات';
+  }
+  calToggle.addEventListener('click', function(){
+    setCalVisible(calStat.classList.contains('cal-hidden'));
+  });
+
+  // السهم: يطلّع/يدخّل درج السعرات — وأول ما يدخل السعرات ترجع مخفية
+  var calDrawerTimer = null;
+  function setCalDrawer(open){
+    ticketRow.classList.toggle('cal-open', open);
+    calTab.setAttribute('aria-expanded', open ? 'true' : 'false');
+    clearTimeout(calDrawerTimer);
+    if (!open){
+      calDrawerTimer = setTimeout(function(){ setCalVisible(false); }, 420);
+    }
+  }
+  calTab.addEventListener('click', function(){
+    setCalDrawer(!ticketRow.classList.contains('cal-open'));
+  });
 
   function renderTotals(){
     var cal = 0, pro = 0;
