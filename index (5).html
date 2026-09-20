@@ -1,0 +1,1528 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="سعراتي">
+<meta name="theme-color" content="#3A2E22">
+<title>سعراتي — سعرات وبروتين</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8D%97%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Changa:wght@500;700;800&family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#FBF3E6;
+    --cream-2:#F3E8D6;
+    --paper:#FFFDF8;
+    --ink:#3A2E22;
+    --ink-soft:#7A6A57;
+    --tomato:#E1512B;
+    --tomato-dark:#B93D1E;
+    --mango:#F3A93A;
+    --avocado:#6E8B4F;
+    --avocado-dark:#57703D;
+    --line:#E6D9C2;
+    --danger:#D64545;
+    --radius-card:22px;
+    --safe-top:env(safe-area-inset-top,0px);
+    --safe-bottom:env(safe-area-inset-bottom,0px);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    background:var(--cream);
+    color:var(--ink);
+    font-family:'Cairo',system-ui,sans-serif;
+    overflow-x:hidden;
+    min-height:100vh;
+    padding-top:var(--safe-top);
+    padding-bottom:var(--safe-bottom);
+  }
+  .bg-texture{
+    position:fixed;inset:0;z-index:0;pointer-events:none;
+    background-image:radial-gradient(var(--cream-2) 1px, transparent 1px);
+    background-size:14px 14px;
+    opacity:.55;
+  }
+  .wrap{
+    position:relative;z-index:1;
+    max-width:520px;margin:0 auto;
+    padding:22px 18px calc(140px + var(--safe-bottom));
+    min-height:100vh;
+  }
+
+  /* Header */
+  .top{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-bottom:18px;
+  }
+  .top h1{
+    font-family:'Changa',sans-serif;
+    font-weight:700;
+    font-size:22px;
+    margin:0;
+    letter-spacing:.5px;
+  }
+  .top .date{
+    font-size:13px;
+    color:var(--ink-soft);
+    margin-top:2px;
+  }
+  .top-emoji{font-size:26px;line-height:1;}
+
+  /* Totals ticket */
+  .ticket{
+    position:relative;
+    background:linear-gradient(135deg, var(--tomato) 0%, var(--tomato-dark) 100%);
+    border-radius:20px;
+    padding:22px 20px 18px;
+    color:#FFF6EC;
+    box-shadow:0 14px 30px -12px rgba(185,61,30,.55);
+    overflow:hidden;
+    margin-bottom:26px;
+  }
+  .ticket::before{
+    content:"";
+    position:absolute;left:0;right:0;bottom:-1px;height:14px;
+    background:
+      radial-gradient(circle at 8px 0, transparent 7px, var(--cream) 7.5px) repeat-x;
+    background-size:16px 14px;
+  }
+  .ticket-row{
+    display:flex;justify-content:space-between;gap:14px;
+  }
+  .ticket-stat{flex:1;text-align:center;}
+  .ticket-stat .num{
+    font-family:'Changa',sans-serif;
+    font-weight:800;
+    font-size:34px;
+    line-height:1;
+    display:flex;align-items:baseline;justify-content:center;gap:4px;
+    direction:ltr;
+  }
+  .ticket-stat .num small{font-size:15px;font-weight:600;opacity:.85;}
+  .ticket-stat .lbl{
+    font-size:12px;margin-top:6px;opacity:.9;
+  }
+  .ticket-div{width:1px;background:rgba(255,255,255,.28);margin:2px 0;}
+  .ticket-goal-row{
+    margin-top:14px;padding-top:12px;
+    border-top:1px dashed rgba(255,255,255,.35);
+    display:flex;justify-content:space-between;align-items:center;
+    font-size:12px;opacity:.92;
+  }
+  .ticket-goal-row button{
+    background:rgba(255,255,255,.16);
+    border:1px solid rgba(255,255,255,.4);
+    color:#FFF6EC;
+    font-family:'Cairo',sans-serif;
+    font-size:12px;
+    padding:5px 10px;
+    border-radius:20px;
+  }
+
+  /* Section label */
+  .section-lbl{
+    display:flex;align-items:center;gap:8px;
+    font-size:13px;color:var(--ink-soft);
+    margin:0 4px 10px;
+  }
+  .section-lbl .count{
+    background:var(--cream-2);
+    border-radius:20px;
+    padding:2px 9px;
+    font-weight:600;
+    color:var(--ink);
+  }
+
+  /* List */
+  .list{
+    background:var(--paper);
+    border-radius:var(--radius-card);
+    box-shadow:0 8px 24px -14px rgba(58,46,34,.25);
+    overflow:hidden;
+  }
+  .row-outer{
+    position:relative;
+    overflow:hidden;
+    border-bottom:1px dashed var(--line);
+  }
+  .row-outer:last-child{border-bottom:none;}
+  .row{
+    position:relative;
+    background:var(--paper);
+    display:flex;align-items:center;gap:10px;
+    padding:14px 16px;
+    touch-action:pan-y;
+    transition:transform .18s ease;
+    will-change:transform;
+    user-select:none;-webkit-user-select:none;
+    z-index:1;
+  }
+  /* red layer revealed while swiping left */
+  .swipe-bg{
+    position:absolute;inset:0;
+    display:none;
+    align-items:center;justify-content:flex-start;gap:8px;
+    padding:0 20px;
+    background:#E06A5A;
+    color:#fff;font-weight:700;font-size:14px;
+    transition:background .15s ease;
+  }
+  .swipe-bg svg{width:21px;height:21px;flex:none;}
+  .row-outer.swiping .swipe-bg{display:flex;}
+  .row-outer.armed .swipe-bg{background:var(--danger);}
+  .row-emoji{
+    width:38px;height:38px;flex:none;
+    border-radius:12px;
+    background:var(--cream-2);
+    display:flex;align-items:center;justify-content:center;
+    font-size:19px;
+  }
+  .row-main{flex:1;min-width:0;}
+  .row-name{
+    font-weight:600;font-size:15.5px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .row-badges{
+    display:flex;gap:7px;margin-top:5px;flex-wrap:wrap;
+  }
+  .badge{
+    font-size:11.5px;font-weight:600;
+    padding:3px 9px;border-radius:20px;
+    display:flex;align-items:center;gap:4px;
+    direction:ltr;
+  }
+  .badge.cal{background:#FDECE3;color:var(--tomato-dark);}
+  .badge.pro{background:#EAF1E1;color:var(--avocado-dark);}
+  .badge.state{background:var(--cream-2);color:var(--ink-soft);}
+  .section-lbl span{white-space:nowrap;}
+  .swipe-hint{
+    margin-inline-start:auto;
+    font-size:11.5px;opacity:.8;
+  }
+
+  .empty{
+    text-align:center;
+    padding:46px 20px 40px;
+    color:var(--ink-soft);
+  }
+  .empty .emoji{font-size:42px;display:block;margin-bottom:10px;}
+  .empty p{margin:0;font-size:14px;line-height:1.9;}
+  .empty strong{color:var(--ink);}
+
+  /* Bottom bar */
+  .bottom-bar{
+    position:fixed;
+    left:0;right:0;
+    bottom:calc(20px + var(--safe-bottom));
+    z-index:20;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:10px;
+    padding:0 18px;
+  }
+  .fab, .fab-secondary{
+    border:none;
+    display:flex;align-items:center;gap:8px;
+    font-family:'Cairo',sans-serif;
+    font-weight:700;font-size:14.5px;
+    border-radius:40px;
+    padding:14px 22px;
+  }
+  .fab{
+    background:linear-gradient(135deg,var(--mango),#E8912A);
+    color:#3A2405;
+    box-shadow:0 14px 26px -10px rgba(232,145,42,.7);
+  }
+  .fab svg,.fab-secondary svg{width:19px;height:19px;flex:none;}
+  .fab,.fab-secondary{white-space:nowrap;}
+  @media (max-width:370px){
+    .bottom-bar{gap:8px;padding:0 12px;}
+    .fab,.fab-secondary{padding:13px 15px;font-size:13.5px;gap:6px;}
+  }
+  .fab-secondary{
+    background:var(--paper);
+    color:var(--ink);
+    border:1.5px solid var(--line);
+    box-shadow:0 8px 18px -10px rgba(58,46,34,.25);
+  }
+  .fab:active,.fab-secondary:active{transform:scale(.96);}
+
+  /* Sheet */
+  .overlay{
+    position:fixed;inset:0;background:rgba(58,46,34,.45);
+    z-index:30;opacity:0;pointer-events:none;
+    transition:opacity .22s ease;
+  }
+  .overlay.show{opacity:1;pointer-events:auto;}
+  .sheet{
+    position:fixed;left:0;right:0;bottom:0;z-index:31;
+    background:var(--paper);
+    border-radius:26px 26px 0 0;
+    padding:10px 20px calc(26px + var(--safe-bottom));
+    max-width:520px;margin:0 auto;
+    transform:translateY(105%);
+    transition:transform .28s cubic-bezier(.32,.72,0,1);
+    box-shadow:0 -10px 30px rgba(0,0,0,.18);
+    max-height:92vh;max-height:92dvh;
+    overflow-y:auto;-webkit-overflow-scrolling:touch;
+  }
+  .sheet.show{transform:translateY(0);}
+  .sheet-tall{max-height:82vh;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+  .sheet-handle{
+    width:40px;height:4px;background:var(--line);
+    border-radius:4px;margin:10px auto 14px;
+  }
+  .sheet h2{
+    font-family:'Changa',sans-serif;
+    font-size:19px;margin:0 0 4px;
+  }
+  .sheet .sub{font-size:12.5px;color:var(--ink-soft);margin:0 0 18px;}
+  .field{margin-bottom:14px;}
+  .field label{
+    display:block;font-size:12.5px;font-weight:600;
+    color:var(--ink-soft);margin-bottom:6px;
+  }
+  .field .input-wrap{
+    position:relative;
+    display:flex;align-items:center;
+  }
+  .field input{
+    width:100%;
+    background:var(--cream-2);
+    border:1.5px solid transparent;
+    border-radius:14px;
+    padding:13px 14px;
+    font-family:'Cairo',sans-serif;
+    font-size:15px;
+    color:var(--ink);
+    outline:none;
+  }
+  .field input:focus{border-color:var(--mango);background:var(--paper);}
+  .field .unit{
+    position:absolute;left:14px;
+    font-size:12.5px;color:var(--ink-soft);
+    pointer-events:none;
+  }
+  .field input[type=number]{padding-left:52px;}
+  .field label .icon-note{font-weight:500;font-size:11.5px;margin-inline-start:6px;opacity:.85;}
+  .name-preview{
+    position:absolute;right:12px;
+    width:30px;height:30px;border-radius:9px;
+    background:var(--paper);
+    display:flex;align-items:center;justify-content:center;
+    font-size:17px;pointer-events:none;
+  }
+  .field input.has-preview{padding-right:52px;}
+  .icon-grid{
+    display:flex;gap:8px;
+    overflow-x:auto;padding:2px 2px 8px;margin:0 -2px;
+    scrollbar-width:none;-webkit-overflow-scrolling:touch;
+  }
+  .icon-grid::-webkit-scrollbar{display:none;}
+  .icon-grid button{
+    flex:none;
+    width:42px;height:42px;
+    border-radius:12px;
+    border:1.5px solid var(--line);
+    background:var(--paper);
+    font-size:19px;
+    display:flex;align-items:center;justify-content:center;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .icon-grid button.active{
+    border-color:var(--mango);
+    background:#FDEFD9;
+  }
+  .state-field{
+    overflow:hidden;
+    max-height:0;
+    opacity:0;
+    margin-top:0;
+    padding-top:0;
+    border-top:0 dashed var(--line);
+    transition:max-height .3s ease, opacity .22s ease, margin-top .3s ease, padding-top .3s ease;
+  }
+  .state-field.show{
+    max-height:130px;
+    opacity:1;
+    margin-top:2px;
+    padding-top:14px;
+    border-top-width:1px;
+    margin-bottom:14px;
+  }
+  .segmented{
+    display:flex;
+    background:var(--cream-2);
+    border-radius:14px;
+    padding:4px;
+    gap:4px;
+  }
+  .segmented button{
+    flex:1;
+    border:none;background:transparent;
+    padding:10px 8px;
+    border-radius:10px;
+    font-family:'Cairo',sans-serif;
+    font-weight:600;font-size:13.5px;
+    color:var(--ink-soft);
+    display:flex;align-items:center;justify-content:center;gap:6px;
+    transition:background .18s ease, color .18s ease, box-shadow .18s ease;
+  }
+  .segmented button.active{
+    background:var(--paper);
+    color:var(--ink);
+    box-shadow:0 3px 8px rgba(58,46,34,.12);
+  }
+  .state-hint{
+    font-size:11.5px;color:var(--ink-soft);
+    margin:7px 2px 0;
+  }
+  .two-col{display:flex;gap:12px;}
+  .two-col .field{flex:1;}
+  .goal-presets{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:10px;
+    margin-bottom:18px;
+  }
+  .goal-presets button{
+    border:1.5px solid var(--line);
+    background:var(--paper);
+    border-radius:14px;
+    padding:13px 6px;
+    font-family:'Cairo',sans-serif;
+    font-weight:700;font-size:14.5px;
+    color:var(--ink);
+    direction:ltr;
+    transition:border-color .15s ease, background .15s ease, color .15s ease;
+  }
+  .goal-presets button.active{
+    border-color:var(--avocado);
+    background:#EAF1E1;
+    color:var(--avocado-dark);
+  }
+  .clear-goal{
+    display:block;
+    width:100%;
+    background:none;border:none;
+    text-align:center;
+    font-family:'Cairo',sans-serif;
+    font-size:12.5px;font-weight:600;
+    color:var(--danger);
+    padding:14px 0 4px;
+  }
+  .clear-goal.hide{display:none;}
+  .sheet-actions{display:flex;gap:10px;margin-top:6px;}
+  .btn{
+    flex:1;
+    border:none;border-radius:14px;
+    padding:14px;
+    font-family:'Cairo',sans-serif;font-weight:700;font-size:15px;
+  }
+  .btn-cancel{background:var(--cream-2);color:var(--ink-soft);}
+  .btn-save{
+    background:linear-gradient(135deg,var(--avocado),var(--avocado-dark));
+    color:#F3F8EA;
+  }
+  .btn-block{width:100%;margin-top:16px;}
+  .btn-save:active,.btn-cancel:active{transform:scale(.97);}
+  .toast{
+    position:fixed;bottom:calc(96px + var(--safe-bottom));left:50%;
+    transform:translateX(-50%) translateY(20px);
+    background:var(--ink);color:var(--cream);
+    padding:10px 18px;border-radius:30px;
+    font-size:13px;z-index:40;
+    opacity:0;transition:all .25s ease;
+    pointer-events:none;
+    white-space:nowrap;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .toast button{
+    display:none;
+    background:none;border:none;padding:0;margin-inline-start:14px;
+    font-family:'Cairo',sans-serif;font-weight:700;font-size:13px;
+    color:var(--mango);
+  }
+  .toast.has-action{pointer-events:auto;}
+  .toast.has-action button{display:inline;}
+
+  /* ---- Calories table sheet ---- */
+  .tbl{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:var(--radius-card);
+    box-shadow:0 8px 24px -14px rgba(58,46,34,.25);
+    overflow:hidden;
+  }
+  .tbl-head,.tbl-form,.row.tbl-row{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) 60px 60px 38px;
+    align-items:center;gap:8px;
+    padding:10px 12px;
+  }
+  .tbl-head{
+    background:var(--cream-2);
+    font-size:11.5px;font-weight:700;color:var(--ink-soft);
+    padding-top:9px;padding-bottom:9px;
+  }
+  .tbl-head span:nth-child(2),.tbl-head span:nth-child(3){text-align:center;}
+  .tbl-form{
+    background:#FFF8EA;
+    border-bottom:1.5px dashed var(--line);
+    transition:background .2s ease;
+  }
+  .tbl-form.editing{background:#FDEFD9;}
+  .tbl-form input{
+    width:100%;min-width:0;
+    background:var(--paper);
+    border:1.5px solid var(--line);
+    border-radius:11px;
+    padding:9px 8px;
+    font-family:'Cairo',sans-serif;font-size:14px;color:var(--ink);
+    outline:none;
+  }
+  .tbl-form input:focus{border-color:var(--mango);}
+  .tbl-form input[type=number]{
+    text-align:center;direction:ltr;padding-left:2px;padding-right:2px;
+    -moz-appearance:textfield;appearance:textfield;
+  }
+  .tbl-form input[type=number]::-webkit-inner-spin-button,
+  .tbl-form input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0;}
+  .tbl-save,.tbl-add{
+    width:36px;height:36px;border:none;border-radius:11px;
+    display:flex;align-items:center;justify-content:center;
+    transition:transform .12s ease, background .15s ease;
+  }
+  .tbl-save svg,.tbl-add svg{width:18px;height:18px;}
+  .tbl-save{background:linear-gradient(135deg,var(--avocado),var(--avocado-dark));color:#F3F8EA;}
+  .tbl-add{background:linear-gradient(135deg,var(--mango),#E8912A);color:#3A2405;}
+  .tbl-add.done{background:var(--avocado);color:#F3F8EA;}
+  .tbl-save:active,.tbl-add:active{transform:scale(.92);}
+  .tbl-edit-note,.tbl-state{display:none;grid-column:1 / -1;}
+  .tbl-edit-note.show{
+    display:flex;align-items:center;justify-content:space-between;gap:8px;
+    font-size:12px;font-weight:600;color:#9A5B12;
+  }
+  .tbl-edit-note button{
+    border:none;background:none;padding:2px 4px;
+    font-family:'Cairo',sans-serif;font-size:12px;font-weight:700;color:var(--danger);
+  }
+  .tbl-state.show{display:block;}
+  .tbl-state .segmented button{padding:7px 6px;font-size:12.5px;}
+  .row.tbl-row{padding-top:9px;padding-bottom:9px;}
+  .tc-name{display:flex;align-items:center;gap:9px;min-width:0;}
+  .tc-emoji{
+    width:32px;height:32px;flex:none;border-radius:10px;
+    background:var(--cream-2);
+    display:flex;align-items:center;justify-content:center;font-size:17px;
+  }
+  .tc-txt{min-width:0;display:flex;flex-direction:column;}
+  .tc-title{
+    font-weight:600;font-size:14px;line-height:1.35;
+    display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;
+    overflow:hidden;overflow-wrap:anywhere;
+  }
+  .tc-state{font-size:10.5px;color:var(--ink-soft);margin-top:1px;}
+  .pill{
+    font-size:12.5px;font-weight:700;text-align:center;
+    padding:4px 0;border-radius:20px;direction:ltr;
+  }
+  .pill.cal{background:#FDECE3;color:var(--tomato-dark);}
+  .pill.pro{background:#EAF1E1;color:var(--avocado-dark);}
+  .tbl .empty{padding:30px 20px 26px;}
+  .tbl-hint{
+    font-size:11.5px;color:var(--ink-soft);
+    text-align:center;margin:12px 0 0;line-height:1.7;
+  }
+  @media (max-width:360px){
+    .tbl-head,.tbl-form,.row.tbl-row{grid-template-columns:minmax(0,1fr) 48px 48px 34px;gap:5px;padding-left:8px;padding-right:8px;}
+    .tbl-save,.tbl-add{width:34px;height:34px;}
+    .tc-name{gap:7px;}
+    .tc-emoji{width:28px;height:28px;font-size:15px;border-radius:9px;}
+    .pill{font-size:11.5px;}
+    .tbl-form input{font-size:13.5px;padding:9px 6px;}
+  }
+</style>
+</head>
+<body>
+<div class="bg-texture"></div>
+<div class="wrap">
+
+  <div class="top">
+    <div>
+      <h1>سعراتي</h1>
+      <div class="date" id="dateLbl"></div>
+    </div>
+    <div class="top-emoji">🍽️</div>
+  </div>
+
+  <div class="ticket">
+    <div class="ticket-row">
+      <div class="ticket-stat">
+        <div class="num" id="totalCal">0</div>
+        <div class="lbl">سعرة حرارية 🔥</div>
+      </div>
+      <div class="ticket-div"></div>
+      <div class="ticket-stat">
+        <div class="num" id="totalPro">0<small>g</small></div>
+        <div class="lbl">بروتين 💪</div>
+      </div>
+    </div>
+    <div class="ticket-goal-row">
+      <span id="goalTxt">حدّد هدفك اليومي من البروتين</span>
+      <button id="goalBtn" type="button">تحديد الهدف</button>
+    </div>
+  </div>
+
+  <div class="section-lbl">
+    <span>الأصناف المضافة</span>
+    <span class="count" id="rowCount">0</span>
+    <span class="swipe-hint" id="swipeHint" style="display:none">اسحب شمال للمسح</span>
+  </div>
+
+  <div class="list" id="listBox"></div>
+
+</div>
+
+<div class="bottom-bar">
+  <button class="fab-secondary" id="openCatalog" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 7.2l1.7 1.7 3-3.6M3.5 13.2l1.7 1.7 3-3.6M3.5 19.2l1.7 1.7 3-3.6"/><path d="M12.5 7h8M12.5 13h8M12.5 19h8"/></svg>
+    سعرات الأصناف
+  </button>
+  <button class="fab" id="openSheet" type="button">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>
+    إضافة صنف
+  </button>
+</div>
+
+<div class="overlay" id="overlay"></div>
+<div class="sheet" id="sheet">
+  <div class="sheet-handle"></div>
+  <h2 id="sheetTitle">صنف جديد</h2>
+  <p class="sub">اكتب الاسم والسعرات والبروتين — والأيقونة بتتحدد لوحدها وتقدر تغيّرها</p>
+
+  <div class="field">
+    <label>اسم الصنف</label>
+    <div class="input-wrap">
+      <span class="name-preview" id="namePreview">🍽️</span>
+      <input type="text" id="fName" class="has-preview" placeholder="مثلاً: صدر فراخ مشوي" maxlength="40" autocomplete="off">
+    </div>
+  </div>
+
+  <div class="field">
+    <label>الأيقونة <span class="icon-note" id="iconNote">بتتحدد تلقائي من الاسم</span></label>
+    <div class="icon-grid" id="iconGrid"></div>
+  </div>
+
+  <div class="state-field" id="stateField">
+    <label>حالة الصنف</label>
+    <div class="segmented" id="stateSeg">
+      <button type="button" data-state="raw">🥩 نيء</button>
+      <button type="button" data-state="cooked">🍳 مستوي</button>
+    </div>
+    <div class="state-hint">عشان تفتكر السعرات دي محسوبة على إيه</div>
+  </div>
+
+  <div class="two-col">
+    <div class="field">
+      <label>السعرات الحرارية</label>
+      <div class="input-wrap">
+        <input type="number" id="fCal" inputmode="numeric" placeholder="0">
+        <span class="unit">سعرة</span>
+      </div>
+    </div>
+    <div class="field">
+      <label>البروتين</label>
+      <div class="input-wrap">
+        <input type="number" id="fPro" inputmode="decimal" placeholder="0">
+        <span class="unit">جم</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sheet-actions">
+    <button class="btn btn-cancel" id="cancelBtn" type="button">إلغاء</button>
+    <button class="btn btn-save" id="saveBtn" type="button">إضافة</button>
+  </div>
+</div>
+
+<div class="overlay" id="goalOverlay"></div>
+<div class="sheet" id="goalSheet">
+  <div class="sheet-handle"></div>
+  <h2>هدفك اليومي من البروتين</h2>
+  <p class="sub">اختار رقم جاهز أو اكتب رقمك</p>
+
+  <div class="goal-presets" id="goalPresets">
+    <button type="button" data-val="60">60g</button>
+    <button type="button" data-val="80">80g</button>
+    <button type="button" data-val="100">100g</button>
+    <button type="button" data-val="120">120g</button>
+    <button type="button" data-val="150">150g</button>
+    <button type="button" data-val="180">180g</button>
+  </div>
+
+  <div class="field">
+    <label>هدف مخصص</label>
+    <div class="input-wrap">
+      <input type="number" id="goalInput" inputmode="numeric" placeholder="مثلاً 130">
+      <span class="unit">جم</span>
+    </div>
+  </div>
+
+  <div class="sheet-actions">
+    <button class="btn btn-cancel" id="goalCancelBtn" type="button">إلغاء</button>
+    <button class="btn btn-save" id="goalSaveBtn" type="button">حفظ</button>
+  </div>
+  <button class="clear-goal" id="clearGoalBtn" type="button">مسح الهدف الحالي</button>
+</div>
+
+<div class="overlay" id="catalogOverlay"></div>
+<div class="sheet sheet-tall" id="catalogSheet">
+  <div class="sheet-handle"></div>
+  <h2>سعرات الأصناف</h2>
+  <p class="sub">سجّل أصنافك وسعراتها مرة واحدة هنا، وبعدها دوس ＋ عشان تضيفها لحساب النهاردة</p>
+
+  <div class="tbl">
+    <div class="tbl-head">
+      <span>الصنف</span><span>سعرات</span><span>بروتين</span><span></span>
+    </div>
+    <div class="tbl-form" id="tblForm">
+      <div class="tbl-edit-note" id="tblEditNote">
+        <span id="tblEditTxt"></span>
+        <button type="button" id="tblEditCancel">إلغاء التعديل</button>
+      </div>
+      <input type="text" id="tName" placeholder="اسم الصنف" maxlength="40" autocomplete="off" enterkeyhint="next">
+      <input type="number" id="tCal" inputmode="numeric" placeholder="0" enterkeyhint="next">
+      <input type="number" id="tPro" inputmode="decimal" placeholder="0" enterkeyhint="done">
+      <button type="button" class="tbl-save" id="tblSave" aria-label="حفظ في الجدول">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+      </button>
+      <div class="tbl-state" id="tblState">
+        <div class="segmented" id="tblStateSeg">
+          <button type="button" data-state="raw">🥩 نيء</button>
+          <button type="button" data-state="cooked">🍳 مستوي</button>
+        </div>
+      </div>
+    </div>
+    <div id="tblBody"></div>
+  </div>
+  <p class="tbl-hint">اضغط على الصف لتعديله • اسحبه ناحية الشمال لمسحه</p>
+  <button class="btn btn-cancel btn-block" id="catalogCloseBtn" type="button">إغلاق</button>
+</div>
+
+<div class="toast" id="toast"><span id="toastMsg"></span><button type="button" id="toastUndo">تراجع</button></div>
+
+<script>
+(function(){
+  var STORAGE_KEY = 'calorieTrackerItems_v1';
+  var GOAL_KEY = 'calorieTrackerProteinGoal_v1';
+  var CATALOG_KEY = 'calorieTrackerCatalog_v1';
+
+  var items = [];
+  var catalog = [];
+  var goal = null;               // daily protein goal (grams)
+  var selectedState = null;      // 'raw' | 'cooked' | null   (add sheet)
+  var selectedIcon = '🍽️';
+  var iconManuallyChosen = false;
+  var editingId = null;          // catalog row being edited in the table
+  var tblSelState = null;        // raw/cooked for the table form
+
+  /* =========================================================
+     Icon detection — Arabic aware
+     - يشيل التشكيل ويوحّد (أ إ آ → ا) و (ة → ه) و (ى → ي)
+     - يقرأ الكلمات بالترتيب ويستخدم أول كلمة ليها أيقونة
+     - بيفهم "ال" التعريف وحروف زي ب/و/ل قبل الكلمة
+     ========================================================= */
+  function norm(s){
+    return String(s || '').toLowerCase()
+      .replace(/[\u064B-\u065F\u0670\u0640]/g, '')
+      .replace(/[أإآٱ]/g, 'ا')
+      .replace(/ى/g, 'ي')
+      .replace(/ة/g, 'ه')
+      .replace(/ؤ/g, 'و')
+      .replace(/ئ/g, 'ي')
+      .replace(/[^\u0621-\u064Aa-z0-9\s]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  // ['أيقونة', [كلمات]] — "=" قبل الكلمة معناها لازم تتطابق تمامًا، والكلمة اللي فيها مسافة بتتدور كعبارة
+  var EMOJI_RULES = [
+    ['🥜', ['زبدة فول سوداني','زبدة سوداني','فول سوداني','peanut butter']],
+    ['🍗', ['ديك رومي','فراخ','فرخ','دجاج','بانيه','ناجتس','ناجتز','وراك','طاووق','كنتاكي','بروستد','chicken','nugget','turkey']],
+    ['🥬', ['ورق عنب','محشي','كرنب','خس','جرجير','سبانخ','بقدونس','كزبرة','شبت','spinach','lettuce','cabbage']],
+    ['🥓', ['بيكون','بسطرمة','لانشون','مرتديلا','bacon','=ham']],
+    ['🌭', ['سجق','سوسيس','نقانق','هوت دوج','hotdog','sausage']],
+    ['🍔', ['برجر','همبرجر','همبورجر','burger']],
+    ['🍕', ['بيتزا','pizza']],
+    ['🌯', ['شاورما','لفة','tortilla','wrap']],
+    ['🥪', ['سندوتش','ساندوتش','سندويتش','ساندويتش','سندوش','sandwich']],
+    ['🧆', ['فلافل','طعمية','falafel']],
+    ['🥩', ['لحم','لحوم','كفتة','كباب','ستيك','بيف','مفروم','كبد','beef','steak','meat','kofta']],
+    ['🍖', ['ضاني','خروف','كندوز','كوارع','ريش','lamb','mutton']],
+    ['🍤', ['جمبري','روبيان','كاليماري','shrimp','prawn']],
+    ['🦀', ['كابوريا','سلطعون','crab']],
+    ['🐟', ['سمك','تونة','تونا','بلطي','سالمون','سردين','بوري','ماكريل','دنيس','قاروص','tuna','fish','salmon','sardine']],
+    ['🍳', ['شكشوكة','اومليت','عجة','omelette','omelet']],
+    ['🥚', ['بيض','=egg','=eggs']],
+    ['🧀', ['جبن','لبنة','رومي','فيتا','موزاريلا','شيدر','قريش','ريكوتا','حلومي','بارميزان','كيري','cheese','cottage']],
+    ['🧈', ['زبدة','سمن','مارجرين','butter','ghee']],
+    ['🥛', ['لبن','حليب','زبادي','رايب','كفير','قشطة','كريمة','milk','yogurt','yoghurt']],
+    ['🍮', ['رز باللبن','رز بلبن','ام علي','مهلبية','بودينج','كراميل','pudding','flan']],
+    ['🍚', ['=رز','ارز','rice']],
+    ['🍝', ['مكرونة','معكرونة','باستا','اسباجتي','سباجيتي','بيني','شعرية','لازانيا','نودلز','اندومي','pasta','spaghetti','noodle']],
+    ['🥐', ['كرواسون','croissant']],
+    ['🥧', ['فطير','=pie']],
+    ['🥖', ['فينو','باجيت','baguette']],
+    ['🥯', ['سميط','bagel']],
+    ['🍞', ['خبز','عيش','توست','رغيف','بقسماط','bread','toast']],
+    ['🍠', ['بطاطا','sweet potato']],
+    ['🍟', ['فرايز','شيبسي','شيبس','تشيبس','fries','chips']],
+    ['🥔', ['بطاطس','potato']],
+    ['🥦', ['بروكلي','قرنبيط','خضار','خضروات','خضرة','broccoli','cauliflower','vegetable','veggie']],
+    ['🥗', ['سلطة','سلطات','salad']],
+    ['🥒', ['خيار','كوسة','cucumber','zucchini']],
+    ['🥕', ['جزر','carrot']],
+    ['🍅', ['طماطم','صلصة','كاتشب','tomato','ketchup']],
+    ['🍆', ['باذنجان','بيتنجان','eggplant']],
+    ['🍿', ['فشار','popcorn']],
+    ['🌾', ['ذرة رفيعة','دقيق','قمح','برغل','فريك','flour','wheat']],
+    ['🌽', ['ذرة','=corn']],
+    ['🧅', ['بصل','onion']],
+    ['🧄', ['ثوم','garlic']],
+    ['🍄', ['مشروم','فطر','mushroom']],
+    ['🌶️', ['فلفل حار','شطة','chili']],
+    ['🫑', ['فلفل']],
+    ['🥑', ['افوكادو','avocado']],
+    ['🫒', ['زيتون','زيت','olive','=oil']],
+    ['🍲', ['شوربة','حساء','فول','عدس','حمص','فاصوليا','لوبيا','بازلاء','بسلة','بامية','ملوخية','كشري','طاجن','مسقعة','soup','stew','lentil','beans']],
+    ['🥣', ['شوفان','اوتس','oats','oatmeal','جرانولا','granola','cereal','كورن فليكس','cornflakes','muesli']],
+    ['🍎', ['تفاح','رمان','فاكهة','فواكه','apple','pomegranate','fruit']],
+    ['🍌', ['موز','banana']],
+    ['🍊', ['جريب فروت','برتقال','يوسفي','مندلينا','جريب','orange','tangerine','mandarin']],
+    ['🍋', ['ليمون','lemon','lime']],
+    ['🍇', ['عنب','زبيب','grape','raisin']],
+    ['🍉', ['بطيخ','watermelon']],
+    ['🍓', ['فراولة','توت','strawberry','berry','berries']],
+    ['🍑', ['خوخ','مشمش','peach','apricot']],
+    ['🍐', ['كمثري','جوافة','pear','guava']],
+    ['🍍', ['اناناس','pineapple']],
+    ['🥭', ['مانجو','مانجا','mango']],
+    ['🥝', ['كيوي','kiwi']],
+    ['🍒', ['كرز','شيري','cherry']],
+    ['🍈', ['شمام','كنتالوب','melon','cantaloupe']],
+    ['🥥', ['جوز هند','جوز الهند','coconut']],
+    ['🌴', ['=تمر','بلح','dates']],
+    ['🥜', ['سوداني','لوز','كاجو','فستق','بندق','مكسرات','عين جمل','جوز','nuts','almond','cashew','pistachio','peanut','walnut','hazelnut']],
+    ['🍫', ['بار بروتين','protein bar','شوكولاتة','شوكولا','شيكولاتة','شيكولا','نوتيلا','كاكاو','كيت كات','سنيكرز','chocolate','nutella','cocoa']],
+    ['🍯', ['عسل','مربى','دبس','طحينة','حلاوة','honey','=jam','tahini']],
+    ['🍰', ['كيك','جاتوه','تورتة','كنافة','بسبوسة','بقلاوة','قطايف','زلابية','cake','brownie']],
+    ['🍪', ['بسكويت','بسكوت','كوكيز','بيتيفور','biscuit','cookie']],
+    ['🍩', ['دونات','donut','doughnut']],
+    ['🍦', ['ايس كريم','ايسكريم','جيلاتي','بوظة','ice cream','icecream','gelato']],
+    ['🍬', ['حلوى','حلويات','=سكر','candy','sugar','sweets']],
+    ['🌾', ['طحين']],
+    ['☕', ['قهوة','نسكافيه','كابتشينو','لاتيه','اسبريسو','coffee','latte','espresso','cappuccino','nescafe']],
+    ['🍵', ['شاي','ينسون','نعناع','كركديه','=tea']],
+    ['🥤', ['مياه غازية','واي بروتين','بروتين شيك','protein shake','بيبسي','كولا','سفن اب','ميرندا','فانتا','سبرايت','مشروب','صودا','شويبس','ريد بول','=whey','=شيك','=واي','pepsi','cola','soda','sprite','fanta']],
+    ['🧃', ['عصير','juice']],
+    ['💧', ['=ماء','مياه','ميه','water']]
+  ];
+
+  var RULES = EMOJI_RULES.map(function(r){
+    return {
+      icon: r[0],
+      words: r[1].map(function(raw){
+        var exact = raw.charAt(0) === '=';
+        var w = norm(exact ? raw.slice(1) : raw);
+        return { w: w, exact: exact || w.length <= 2, phrase: w.indexOf(' ') !== -1 };
+      })
+    };
+  });
+
+  var PREFIXES = ['وبال','بال','وال','لل','ال','و','ب','ل','ف'];
+  function wordForms(word){
+    var out = [word];
+    PREFIXES.forEach(function(p){
+      if (word.length > p.length + 1 && word.indexOf(p) === 0) out.push(word.slice(p.length));
+    });
+    return out;
+  }
+
+  // returns an emoji, or null when nothing matches
+  function guessIcon(name){
+    var s = norm(name);
+    if (!s) return null;
+    var padded = ' ' + s + ' ';
+    var i, j, k, f, w;
+    for (i = 0; i < RULES.length; i++){
+      for (j = 0; j < RULES[i].words.length; j++){
+        w = RULES[i].words[j];
+        if (w.phrase && padded.indexOf(' ' + w.w) !== -1) return RULES[i].icon;
+      }
+    }
+    var tokens = s.split(' ');
+    for (k = 0; k < tokens.length; k++){
+      var forms = wordForms(tokens[k]);
+      for (i = 0; i < RULES.length; i++){
+        for (j = 0; j < RULES[i].words.length; j++){
+          w = RULES[i].words[j];
+          if (w.phrase) continue;
+          for (f = 0; f < forms.length; f++){
+            if (w.exact ? forms[f] === w.w : forms[f].indexOf(w.w) === 0) return RULES[i].icon;
+          }
+        }
+      }
+    }
+    return null;
+  }
+  function detectEmoji(name){ return guessIcon(name) || '🍽️'; }
+
+  var ICON_CHOICES = ['🍗','🥩','🍖','🐟','🍤','🥚','🧀','🥛','🍚','🍝','🍞','🥪','🍔','🍕','🌯','🧆',
+    '🥔','🥦','🥬','🥗','🥕','🍅','🥑','🍲','🥣','🍎','🍌','🍊','🍇','🍉','🍓','🥭','🥜','🍫','🍰','🍯','☕','🥤','💧','🍽️'];
+
+  // الأيقونة المعروضة: اللي اخترتها بإيدك، وإلا بتتحسب من الاسم
+  function itemIcon(it){
+    if (it.iconManual && it.icon) return it.icon;
+    return guessIcon(it.name) || it.icon || '🍽️';
+  }
+
+  /* ---- element refs ---- */
+  var listBox = document.getElementById('listBox');
+  var totalCalEl = document.getElementById('totalCal');
+  var totalProEl = document.getElementById('totalPro');
+  var rowCountEl = document.getElementById('rowCount');
+  var swipeHint = document.getElementById('swipeHint');
+  var goalTxt = document.getElementById('goalTxt');
+  var goalBtn = document.getElementById('goalBtn');
+
+  var sheet = document.getElementById('sheet');
+  var overlay = document.getElementById('overlay');
+  var openSheetBtn = document.getElementById('openSheet');
+  var cancelBtn = document.getElementById('cancelBtn');
+  var saveBtn = document.getElementById('saveBtn');
+  var fName = document.getElementById('fName');
+  var fCal = document.getElementById('fCal');
+  var fPro = document.getElementById('fPro');
+  var namePreview = document.getElementById('namePreview');
+  var iconNote = document.getElementById('iconNote');
+  var toastEl = document.getElementById('toast');
+  var toastMsg = document.getElementById('toastMsg');
+  var toastUndo = document.getElementById('toastUndo');
+  var stateField = document.getElementById('stateField');
+  var stateSeg = document.getElementById('stateSeg');
+  var stateButtons = stateSeg.querySelectorAll('button');
+  var iconGrid = document.getElementById('iconGrid');
+
+  var goalSheet = document.getElementById('goalSheet');
+  var goalOverlay = document.getElementById('goalOverlay');
+  var goalInput = document.getElementById('goalInput');
+  var goalPresets = document.getElementById('goalPresets');
+  var goalPresetButtons = goalPresets.querySelectorAll('button');
+  var goalSaveBtn = document.getElementById('goalSaveBtn');
+  var goalCancelBtn = document.getElementById('goalCancelBtn');
+  var clearGoalBtn = document.getElementById('clearGoalBtn');
+
+  var catalogSheet = document.getElementById('catalogSheet');
+  var catalogOverlay = document.getElementById('catalogOverlay');
+  var openCatalogBtn = document.getElementById('openCatalog');
+  var catalogCloseBtn = document.getElementById('catalogCloseBtn');
+  var tblForm = document.getElementById('tblForm');
+  var tblBody = document.getElementById('tblBody');
+  var tName = document.getElementById('tName');
+  var tCal = document.getElementById('tCal');
+  var tPro = document.getElementById('tPro');
+  var tblSave = document.getElementById('tblSave');
+  var tblState = document.getElementById('tblState');
+  var tblStateButtons = document.getElementById('tblStateSeg').querySelectorAll('button');
+  var tblEditNote = document.getElementById('tblEditNote');
+  var tblEditTxt = document.getElementById('tblEditTxt');
+  var tblEditCancel = document.getElementById('tblEditCancel');
+
+  var TRASH_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg>';
+  var SWIPE_BG = '<div class="swipe-bg" aria-hidden="true">' + TRASH_SVG + '<span>حذف</span></div>';
+  var PLUS_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>';
+  var CHECK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+
+  /* ---- storage ---- */
+  function load(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      items = raw ? JSON.parse(raw) : [];
+    }catch(e){ items = []; }
+    try{
+      var g = localStorage.getItem(GOAL_KEY);
+      goal = g ? JSON.parse(g) : null;
+    }catch(e){ goal = null; }
+    try{
+      var c = localStorage.getItem(CATALOG_KEY);
+      catalog = c ? JSON.parse(c) : [];
+    }catch(e){ catalog = []; }
+    if (!Array.isArray(items)) items = [];
+    if (!Array.isArray(catalog)) catalog = [];
+  }
+
+  function persist(){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(items)); }
+    catch(e){ showToast('تعذر الحفظ على الجهاز'); }
+  }
+  function persistGoal(){
+    try{ localStorage.setItem(GOAL_KEY, JSON.stringify(goal)); }catch(e){}
+  }
+  function persistCatalog(){
+    try{ localStorage.setItem(CATALOG_KEY, JSON.stringify(catalog)); }catch(e){}
+  }
+
+  /* ---- toast (with optional undo) ---- */
+  function showToast(msg, undoFn){
+    toastMsg.textContent = msg;
+    toastEl.classList.toggle('has-action', !!undoFn);
+    toastUndo.onclick = undoFn ? function(){
+      toastEl.classList.remove('show','has-action');
+      clearTimeout(showToast._t);
+      undoFn();
+    } : null;
+    toastEl.classList.add('show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(function(){
+      toastEl.classList.remove('show','has-action');
+    }, undoFn ? 4200 : 1700);
+  }
+
+  function setDate(){
+    var d = new Date();
+    var days = ['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+    var months = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+    document.getElementById('dateLbl').textContent = days[d.getDay()] + '، ' + d.getDate() + ' ' + months[d.getMonth()];
+  }
+
+  function escapeHtml(s){
+    var d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  function fmtNum(n){ return String(Math.round((Number(n) || 0) * 10) / 10); }
+
+  function findIndexById(arr, id){
+    for (var i = 0; i < arr.length; i++){ if (String(arr[i].id) === String(id)) return i; }
+    return -1;
+  }
+
+  function buildBadges(it){
+    var s = '<span class="badge cal">🔥 '+Math.round(it.calories)+'</span>'+
+            '<span class="badge pro">💪 '+Math.round(it.protein)+'g</span>';
+    if (it.state === 'raw') s += '<span class="badge state">🥩 نيء</span>';
+    if (it.state === 'cooked') s += '<span class="badge state">🍳 مستوي</span>';
+    return s;
+  }
+
+  function renderTotals(){
+    var cal = 0, pro = 0;
+    items.forEach(function(it){ cal += Number(it.calories)||0; pro += Number(it.protein)||0; });
+    totalCalEl.textContent = Math.round(cal);
+    totalProEl.innerHTML = Math.round(pro) + '<small>g</small>';
+    rowCountEl.textContent = items.length;
+    swipeHint.style.display = items.length ? '' : 'none';
+
+    if (goal && goal > 0){
+      var remain = goal - pro;
+      if (remain >= 0){
+        goalTxt.textContent = 'باقيلك ' + Math.round(remain) + ' جم بروتين من أصل ' + goal;
+      } else {
+        goalTxt.textContent = 'وصلت لهدفك وزودت ' + Math.round(-remain) + ' جم';
+      }
+      goalBtn.textContent = 'تغيير';
+    } else {
+      goalTxt.textContent = 'حدّد هدفك اليومي من البروتين';
+      goalBtn.textContent = 'تحديد الهدف';
+    }
+  }
+
+  function renderList(){
+    if (!items.length){
+      listBox.innerHTML =
+        '<div class="empty">'+
+          '<span class="emoji">🥗</span>'+
+          '<p>القايمة لسه فاضية<br><strong>اضغط "إضافة صنف"</strong> وابدأ تسجّل يومك</p>'+
+        '</div>';
+      return;
+    }
+    var html = '';
+    items.slice().reverse().forEach(function(it){
+      html +=
+        '<div class="row-outer" data-id="'+it.id+'">'+
+          SWIPE_BG+
+          '<div class="row" data-id="'+it.id+'">'+
+            '<div class="row-emoji">'+itemIcon(it)+'</div>'+
+            '<div class="row-main">'+
+              '<div class="row-name">'+escapeHtml(it.name)+'</div>'+
+              '<div class="row-badges">'+buildBadges(it)+'</div>'+
+            '</div>'+
+          '</div>'+
+        '</div>';
+    });
+    listBox.innerHTML = html;
+    attachSwipe(listBox, deleteItem);
+  }
+
+  function render(){
+    renderTotals();
+    renderList();
+  }
+
+  /* =========================================================
+     Swipe LEFT to delete — pointer events (touch + mouse + pen)
+     ========================================================= */
+  function attachSwipe(scope, onDelete, onTap){
+    var MAX = 260;
+    scope.querySelectorAll('.row-outer').forEach(function(outer){
+      var row = outer.querySelector('.row');
+      var id = outer.getAttribute('data-id');
+      var startX = 0, startY = 0, dx = 0, pid = null;
+      var active = false, locked = false, lastSwipe = 0;
+
+      function threshold(){ return Math.max(84, outer.offsetWidth * 0.3); }
+
+      row.addEventListener('pointerdown', function(e){
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+        if (e.target.closest('.tbl-add')) return;
+        active = true; locked = false; dx = 0;
+        startX = e.clientX; startY = e.clientY; pid = e.pointerId;
+      });
+
+      row.addEventListener('pointermove', function(e){
+        if (!active || e.pointerId !== pid) return;
+        var mx = e.clientX - startX, my = e.clientY - startY;
+        if (!locked){
+          if (Math.abs(mx) < 8 && Math.abs(my) < 8) return;
+          if (Math.abs(my) > Math.abs(mx)){ active = false; return; }   // vertical scroll — leave it alone
+          locked = true;
+          try{ row.setPointerCapture(pid); }catch(err){}
+          row.style.transition = 'none';
+          outer.classList.add('swiping');
+        }
+        dx = Math.max(-MAX, Math.min(0, mx));                            // left only
+        row.style.transform = 'translateX(' + dx + 'px)';
+        outer.classList.toggle('armed', dx < -threshold());
+      });
+
+      function finish(cancelled){
+        if (!active) return;
+        active = false;
+        if (!locked) return;
+        lastSwipe = Date.now();
+        row.style.transition = 'transform .22s ease';
+        if (!cancelled && dx < -threshold()){
+          row.style.transform = 'translateX(-105%)';
+          setTimeout(function(){ onDelete(id); }, 200);
+        } else {
+          row.style.transform = 'translateX(0)';
+          setTimeout(function(){
+            outer.classList.remove('swiping','armed');
+            row.style.transition = '';
+          }, 240);
+        }
+        dx = 0;
+      }
+      row.addEventListener('pointerup', function(){ finish(false); });
+      row.addEventListener('pointercancel', function(){ finish(true); });
+
+      // a swipe must never count as a tap
+      row.addEventListener('click', function(e){
+        if (Date.now() - lastSwipe < 400){ e.stopPropagation(); e.preventDefault(); }
+      }, true);
+      if (onTap){
+        row.addEventListener('click', function(e){
+          if (e.target.closest('.tbl-add')) return;
+          onTap(id);
+        });
+      }
+    });
+  }
+
+  function deleteItem(id){
+    var idx = findIndexById(items, id);
+    if (idx < 0) return;
+    var removed = items.splice(idx, 1)[0];
+    persist();
+    render();
+    showToast('تم الحذف', function(){
+      items.splice(Math.min(idx, items.length), 0, removed);
+      persist();
+      render();
+    });
+  }
+
+  /* =========================================================
+     Calories table (saved items)
+     ========================================================= */
+  function normalizeName(n){ return (n||'').trim(); }
+
+  function upsertCatalog(entry){
+    var norm_ = normalizeName(entry.name);
+    var idx = -1;
+    for (var i=0;i<catalog.length;i++){
+      if (normalizeName(catalog[i].name) === norm_){ idx = i; break; }
+    }
+    var rec = {
+      id: idx !== -1 ? catalog[idx].id : 'c_' + Date.now() + '_' + Math.floor(Math.random()*1000),
+      name: entry.name, calories: entry.calories, protein: entry.protein,
+      state: entry.state || null, icon: entry.icon, iconManual: !!entry.iconManual
+    };
+    if (idx !== -1) catalog[idx] = rec; else catalog.push(rec);
+    persistCatalog();
+  }
+
+  function deleteCatalog(id){
+    var idx = findIndexById(catalog, id);
+    if (idx < 0) return;
+    var removed = catalog.splice(idx, 1)[0];
+    if (editingId && String(editingId) === String(id)) endEdit();
+    persistCatalog();
+    renderCatalog();
+    showToast('اتمسح من الجدول', function(){
+      catalog.splice(Math.min(idx, catalog.length), 0, removed);
+      persistCatalog();
+      renderCatalog();
+    });
+  }
+
+  function quickAddFromCatalog(id, btn){
+    var idx = findIndexById(catalog, id);
+    if (idx < 0) return;
+    var it = catalog[idx];
+    addItem(it.name, it.calories, it.protein, it.state, it.icon, it.iconManual);
+    showToast('اتضاف للنهاردة ✓');
+    if (btn){
+      btn.classList.add('done');
+      btn.innerHTML = CHECK_SVG;
+      setTimeout(function(){ btn.classList.remove('done'); btn.innerHTML = PLUS_SVG; }, 800);
+    }
+  }
+
+  function renderCatalog(){
+    if (!catalog.length){
+      tblBody.innerHTML =
+        '<div class="empty">'+
+          '<span class="emoji">📋</span>'+
+          '<p>الجدول لسه فاضي<br><strong>اكتب أول صنف فوق</strong> أو أضف صنف من الشاشة الرئيسية وهيتسجل هنا تلقائي</p>'+
+        '</div>';
+      return;
+    }
+    var html = '';
+    catalog.slice().reverse().forEach(function(it){
+      var stateTxt = it.state === 'raw' ? 'نيء' : (it.state === 'cooked' ? 'مستوي' : '');
+      html +=
+        '<div class="row-outer" data-id="'+it.id+'">'+
+          SWIPE_BG+
+          '<div class="row tbl-row" data-id="'+it.id+'">'+
+            '<div class="tc-name">'+
+              '<span class="tc-emoji">'+itemIcon(it)+'</span>'+
+              '<span class="tc-txt">'+
+                '<span class="tc-title">'+escapeHtml(it.name)+'</span>'+
+                (stateTxt ? '<span class="tc-state">'+stateTxt+'</span>' : '')+
+              '</span>'+
+            '</div>'+
+            '<span class="pill cal">'+fmtNum(it.calories)+'</span>'+
+            '<span class="pill pro">'+fmtNum(it.protein)+'g</span>'+
+            '<button type="button" class="tbl-add" data-id="'+it.id+'" aria-label="إضافة لحساب النهاردة">'+PLUS_SVG+'</button>'+
+          '</div>'+
+        '</div>';
+    });
+    tblBody.innerHTML = html;
+    attachSwipe(tblBody, deleteCatalog, startEdit);
+    tblBody.querySelectorAll('.tbl-add').forEach(function(btn){
+      btn.addEventListener('click', function(e){
+        e.stopPropagation();
+        quickAddFromCatalog(btn.getAttribute('data-id'), btn);
+      });
+    });
+  }
+
+  /* table form: raw/cooked chips only for chicken & meat names */
+  var STATE_WORDS = ['فراخ','فرخ','دجاج','لحم'];
+  function nameSuggestsState(name){
+    var n = norm(name);
+    return STATE_WORDS.some(function(k){ return n.indexOf(k) !== -1; });
+  }
+
+  function setTblState(val){
+    tblSelState = val;
+    tblStateButtons.forEach(function(btn){
+      btn.classList.toggle('active', btn.getAttribute('data-state') === val);
+    });
+  }
+  function refreshTblState(){
+    if (nameSuggestsState(tName.value)){
+      tblState.classList.add('show');
+    } else {
+      tblState.classList.remove('show');
+      setTblState(null);
+    }
+  }
+  tblStateButtons.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var val = btn.getAttribute('data-state');
+      setTblState(tblSelState === val ? null : val);
+    });
+  });
+  tName.addEventListener('input', refreshTblState);
+
+  function clearTblForm(){
+    tName.value = ''; tCal.value = ''; tPro.value = '';
+    tblState.classList.remove('show');
+    setTblState(null);
+  }
+
+  function startEdit(id){
+    var idx = findIndexById(catalog, id);
+    if (idx < 0) return;
+    var it = catalog[idx];
+    editingId = it.id;
+    tName.value = it.name; tCal.value = it.calories; tPro.value = it.protein;
+    refreshTblState();
+    if (it.state){ tblState.classList.add('show'); setTblState(it.state); }
+    tblForm.classList.add('editing');
+    tblEditTxt.textContent = 'بتعدّل: ' + it.name;
+    tblEditNote.classList.add('show');
+    catalogSheet.scrollTo({ top: 0, behavior: 'smooth' });
+    tCal.focus();
+  }
+  function endEdit(){
+    editingId = null;
+    clearTblForm();
+    tblForm.classList.remove('editing');
+    tblEditNote.classList.remove('show');
+  }
+  tblEditCancel.addEventListener('click', endEdit);
+
+  function saveTableEntry(){
+    var name = tName.value.trim();
+    var cal = parseFloat(tCal.value);
+    var pro = parseFloat(tPro.value);
+    if (!name){ showToast('اكتب اسم الصنف'); tName.focus(); return; }
+    if (isNaN(cal) || cal < 0){ showToast('اكتب السعرات صح'); tCal.focus(); return; }
+    if (isNaN(pro) || pro < 0){ pro = 0; }
+
+    var wasEditing = !!editingId;
+    if (wasEditing){
+      var idx = findIndexById(catalog, editingId);
+      if (idx !== -1){
+        var it = catalog[idx];
+        var sameName = normalizeName(it.name) === name;
+        it.name = name; it.calories = cal; it.protein = pro; it.state = tblSelState;
+        if (!(it.iconManual && sameName)){ it.icon = detectEmoji(name); it.iconManual = false; }
+        persistCatalog();
+      }
+    } else {
+      upsertCatalog({ name: name, calories: cal, protein: pro, state: tblSelState, icon: detectEmoji(name), iconManual: false });
+    }
+    endEdit();
+    renderCatalog();
+    showToast('اتحفظ في الجدول ✓');
+    if (!wasEditing) tName.focus();
+  }
+  tblSave.addEventListener('click', saveTableEntry);
+  tName.addEventListener('keydown', function(e){ if (e.key === 'Enter'){ e.preventDefault(); tCal.focus(); } });
+  tCal.addEventListener('keydown', function(e){ if (e.key === 'Enter'){ e.preventDefault(); tPro.focus(); } });
+  tPro.addEventListener('keydown', function(e){ if (e.key === 'Enter'){ e.preventDefault(); saveTableEntry(); } });
+
+  function openCatalogSheet(){
+    endEdit();
+    renderCatalog();
+    catalogOverlay.classList.add('show');
+    catalogSheet.classList.add('show');
+    catalogSheet.scrollTop = 0;
+  }
+  function closeCatalogSheet(){
+    catalogOverlay.classList.remove('show');
+    catalogSheet.classList.remove('show');
+    tName.blur(); tCal.blur(); tPro.blur();
+  }
+  openCatalogBtn.addEventListener('click', openCatalogSheet);
+  catalogOverlay.addEventListener('click', closeCatalogSheet);
+  catalogCloseBtn.addEventListener('click', closeCatalogSheet);
+
+  /* ---- add item to today ---- */
+  function addItem(name, cal, pro, state, icon, iconManual){
+    var it = {
+      id: Date.now() + '_' + Math.floor(Math.random()*1000),
+      name: name,
+      calories: cal,
+      protein: pro,
+      state: state || null,
+      icon: icon || detectEmoji(name),
+      iconManual: !!iconManual
+    };
+    items.push(it);
+    persist();
+    upsertCatalog(it);
+    render();
+    if (catalogSheet.classList.contains('show')) renderCatalog();
+  }
+
+  /* ---- Icon picker (auto from the name, or pick yourself) ---- */
+  iconGrid.innerHTML = ICON_CHOICES.map(function(ic){
+    return '<button type="button" data-icon="'+ic+'">'+ic+'</button>';
+  }).join('');
+  var iconButtons = iconGrid.querySelectorAll('button');
+
+  function updateIconUI(){
+    namePreview.textContent = selectedIcon;
+    var activeBtn = null;
+    iconButtons.forEach(function(btn){
+      var on = btn.getAttribute('data-icon') === selectedIcon;
+      btn.classList.toggle('active', on);
+      if (on) activeBtn = btn;
+    });
+    if (activeBtn && sheet.classList.contains('show')){
+      try{ activeBtn.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' }); }catch(e){}
+    }
+    iconNote.textContent = iconManuallyChosen
+      ? 'مختارة بإيدك • دوسها تاني ترجع تلقائي'
+      : 'بتتحدد تلقائي من الاسم';
+  }
+  iconButtons.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var ic = btn.getAttribute('data-icon');
+      if (iconManuallyChosen && selectedIcon === ic){
+        iconManuallyChosen = false;
+        selectedIcon = detectEmoji(fName.value);
+      } else {
+        iconManuallyChosen = true;
+        selectedIcon = ic;
+      }
+      updateIconUI();
+    });
+  });
+
+  /* ---- Raw/cooked assist (add sheet): only for chicken / meat names ---- */
+  function setSelectedState(val){
+    selectedState = val;
+    stateButtons.forEach(function(btn){
+      btn.classList.toggle('active', btn.getAttribute('data-state') === val);
+    });
+  }
+  function refreshStateVisibility(){
+    if (nameSuggestsState(fName.value)){
+      stateField.classList.add('show');
+    } else {
+      stateField.classList.remove('show');
+      setSelectedState(null);
+    }
+  }
+  stateButtons.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var val = btn.getAttribute('data-state');
+      setSelectedState(selectedState === val ? null : val);
+    });
+  });
+
+  fName.addEventListener('input', function(){
+    refreshStateVisibility();
+    if (!iconManuallyChosen){ selectedIcon = detectEmoji(fName.value); }
+    updateIconUI();
+  });
+
+  /* ---- Add-item sheet ---- */
+  function openSheet(){
+    fName.value = ''; fCal.value=''; fPro.value='';
+    stateField.classList.remove('show');
+    setSelectedState(null);
+    iconManuallyChosen = false;
+    selectedIcon = '🍽️';
+    updateIconUI();
+    overlay.classList.add('show');
+    sheet.classList.add('show');
+    sheet.scrollTop = 0;
+    setTimeout(function(){ fName.focus(); }, 260);
+  }
+  function closeSheet(){
+    overlay.classList.remove('show');
+    sheet.classList.remove('show');
+    fName.blur(); fCal.blur(); fPro.blur();
+  }
+
+  openSheetBtn.addEventListener('click', openSheet);
+  cancelBtn.addEventListener('click', closeSheet);
+  overlay.addEventListener('click', closeSheet);
+
+  saveBtn.addEventListener('click', function(){
+    var name = fName.value.trim();
+    var cal = parseFloat(fCal.value);
+    var pro = parseFloat(fPro.value);
+    if (!name){ showToast('اكتب اسم الصنف'); fName.focus(); return; }
+    if (isNaN(cal) || cal < 0){ showToast('اكتب السعرات صح'); fCal.focus(); return; }
+    if (isNaN(pro) || pro < 0){ pro = 0; }
+    var icon = iconManuallyChosen ? selectedIcon : detectEmoji(name);   // re-detect on save, never rely on the typing event
+    addItem(name, cal, pro, selectedState, icon, iconManuallyChosen);
+    closeSheet();
+    showToast('تمت الإضافة ✓');
+  });
+
+  /* ---- Goal sheet ---- */
+  goalBtn.addEventListener('click', openGoalSheet);
+
+  function syncGoalPresets(){
+    var current = parseFloat(goalInput.value);
+    goalPresetButtons.forEach(function(btn){
+      var v = parseFloat(btn.getAttribute('data-val'));
+      btn.classList.toggle('active', !isNaN(current) && current === v);
+    });
+  }
+  function openGoalSheet(){
+    goalInput.value = goal || '';
+    syncGoalPresets();
+    clearGoalBtn.classList.toggle('hide', !goal);
+    goalOverlay.classList.add('show');
+    goalSheet.classList.add('show');
+    setTimeout(function(){ goalInput.focus(); }, 260);
+  }
+  function closeGoalSheet(){
+    goalOverlay.classList.remove('show');
+    goalSheet.classList.remove('show');
+    goalInput.blur();
+  }
+  goalPresetButtons.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      goalInput.value = btn.getAttribute('data-val');
+      syncGoalPresets();
+    });
+  });
+  goalInput.addEventListener('input', syncGoalPresets);
+  goalCancelBtn.addEventListener('click', closeGoalSheet);
+  goalOverlay.addEventListener('click', closeGoalSheet);
+
+  goalSaveBtn.addEventListener('click', function(){
+    var num = parseFloat(goalInput.value);
+    if (isNaN(num) || num <= 0){ showToast('اكتب رقم صحيح'); goalInput.focus(); return; }
+    goal = num;
+    persistGoal();
+    renderTotals();
+    closeGoalSheet();
+    showToast('تم حفظ الهدف ✓');
+  });
+  clearGoalBtn.addEventListener('click', function(){
+    goal = null;
+    persistGoal();
+    renderTotals();
+    closeGoalSheet();
+    showToast('تم مسح الهدف');
+  });
+
+  load();
+  setDate();
+  updateIconUI();
+  render();
+})();
+</script>
+</body>
+</html>
